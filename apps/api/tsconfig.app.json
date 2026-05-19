@@ -5,6 +5,20 @@
     "declaration": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts", "jest.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "../../libs/shared-prisma/src/**/*.ts",
+    "../../libs/shared-auth/src/**/*.ts",
+    "../../libs/shared-types/src/**/*.ts",
+    "../../libs/shared-errors/src/**/*.ts",
+    "../../libs/shared-utils/src/**/*.ts",
+    "../../libs/shared-config/src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "jest.config.ts",
+    "../../libs/**/*.spec.ts",
+    "../../libs/**/*.test.ts"
+  ]
 }
