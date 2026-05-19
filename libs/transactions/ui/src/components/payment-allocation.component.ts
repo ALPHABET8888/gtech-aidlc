@@ -5,7 +5,7 @@ import { ApOpenItemDetail, ArOpenItemDetail } from '../models';
 
 export interface AllocationRow {
   openItemId: string;
-  refTxType: string;
+  txType: string;
   originalAmount: number;
   remainingAmount: number;
   allocatedAmount: number | null;
@@ -45,7 +45,7 @@ export interface AllocationOutput {
             @for (row of rows(); track row.openItemId) {
               <tr>
                 <td>{{ row.openItemId.slice(0, 8) }}...</td>
-                <td>{{ row.refTxType }}</td>
+                <td>{{ row.txType }}</td>
                 <td class="col-amount">{{ row.remainingAmount | number:'1.2-2' }}</td>
                 <td class="col-amount">
                   <input
@@ -128,7 +128,7 @@ export class PaymentAllocationComponent {
     this.rows.set(
       value.map((item) => ({
         openItemId: item.id,
-        refTxType: item.refTxType,
+        txType: item.txType,
         originalAmount: item.originalAmount,
         remainingAmount: item.remainingAmount,
         allocatedAmount: null,

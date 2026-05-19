@@ -1,7 +1,9 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -9,6 +11,8 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard, RolesGuard, Roles, CurrentUser } from '@autoflow/shared-auth';
 import { Role } from '@autoflow/shared-types';
+import { ClearingStatus } from '@prisma/client';
+import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 import {
   CreateGoodsReceiptDto,
   CreateGoodsReturnDto,
@@ -17,8 +21,23 @@ import {
   CreateCnPriceAdjDto,
   CreateCnDebtDto,
 } from '../dto/purchasing';
+import { PaginationQueryDto } from '../dto/shared';
 import { GoodsReceiptService } from './goods-receipt.service';
 import { PurchaseCnService } from './purchase-cn.service';
+import { GrIrClearingService } from './gr-ir-clearing.service';
+
+/**
+ * Query DTO for listing GR/IR clearings with filters.
+ */
+export class ListClearingsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsUUID()
+  vendorId?: string;
+
+  @IsOptional()
+  @IsEnum(ClearingStatus)
+  status?: ClearingStatus;
+}
 
 /**
  * PurchasingController — REST endpoints for Purchasing GR + CN flows.
@@ -26,13 +45,34 @@ import { PurchaseCnService } from './purchase-cn.service';
  */
 @ApiTags('Purchasing')
 @ApiBearerAuth('bearer')
-@Controller('api/v1/transactions/purchasing')
+@Controller('transactions/purchasing')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PurchasingController {
   constructor(
     private readonly goodsReceiptService: GoodsReceiptService,
     private readonly purchaseCnService: PurchaseCnService,
+    private readonly grIrClearingService: GrIrClearingService,
   ) {}
+
+  /**
+   * GET /purchasing/clearings
+   * List GR/IR clearings with pagination and optional filters.
+   * Auth: Store Staff+
+   */
+  @Get('clearings')
+  @Roles(Role.STORE, Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
+  @ApiOperation({ summary: 'List GR/IR clearings' })
+  @ApiResponse({ status: 200, description: 'Paginated list of GR/IR clearings' })
+  @ApiResponse({ status: 401, description: 'Not authenticated' })
+  @ApiResponse({ status: 403, description: 'Insufficient role' })
+  async listClearings(@Query() query: ListClearingsQueryDto) {
+    return this.grIrClearingService.listClearings({
+      vendorId: query.vendorId,
+      status: query.status,
+      page: query.page,
+      limit: query.limit,
+    });
+  }
 
   /**
    * POST /purchasing/gr-receive

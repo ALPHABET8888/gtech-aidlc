@@ -57,7 +57,7 @@ export class ListArOpenItemsQueryDto extends PaginationQueryDto {
  */
 @ApiTags('AP/AR — Payments & Open Items')
 @ApiBearerAuth('bearer')
-@Controller('api/v1/transactions')
+@Controller('transactions')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ApArController {
   constructor(

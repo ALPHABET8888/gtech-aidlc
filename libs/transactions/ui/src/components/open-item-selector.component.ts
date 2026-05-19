@@ -67,11 +67,11 @@ export type OpenItemRow = (ApOpenItemDetail | ArOpenItemDetail) & { selected: bo
                     [checked]="item.selected"
                     (click)="$event.stopPropagation()"
                     (change)="toggleItem(item)"
-                    [attr.aria-label]="'เลือก ' + item.refTxId.slice(0, 8)"
+                    [attr.aria-label]="'เลือก ' + item.txId.slice(0, 8)"
                   />
                 </td>
-                <td>{{ item.refTxId.slice(0, 8) }}...</td>
-                <td>{{ item.refTxType }}</td>
+                <td>{{ item.txId.slice(0, 8) }}...</td>
+                <td>{{ item.txType }}</td>
                 <td class="col-amount">{{ item.originalAmount | number:'1.2-2' }}</td>
                 <td class="col-amount">{{ item.remainingAmount | number:'1.2-2' }}</td>
                 <td>
