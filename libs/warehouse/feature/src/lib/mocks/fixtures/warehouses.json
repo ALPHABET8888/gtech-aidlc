@@ -1,0 +1,22 @@
+[
+  {
+    "id": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "name": "คลังสินค้าหลัก",
+    "code": "WH-MAIN"
+  },
+  {
+    "id": "wh-002b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+    "name": "คลังสินค้าสาขาบางนา",
+    "code": "WH-BNA"
+  },
+  {
+    "id": "wh-003c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+    "name": "คลังสินค้าสาขารังสิต",
+    "code": "WH-RST"
+  },
+  {
+    "id": "wh-004d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f",
+    "name": "คลังวัสดุก่อสร้าง",
+    "code": "WH-CON"
+  }
+]

@@ -92,8 +92,8 @@ units:
   - name: "warehouse"
     displayName: "คลังสินค้า (Warehouse Operations)"
     status: "in-progress"
-    phase: "design"
-    completedPhases: []
+    phase: "tasks"
+    completedPhases: [design, tasks]
     implementationMode: null
     implementation:
       totalTasks: 22
@@ -106,7 +106,7 @@ units:
         timestamp: "2026-05-19T10:00:00Z"
         files: [design.md]
       tasks:
-        status: "draft"
+        status: "approved"
         timestamp: "2026-05-19T10:10:00Z"
         files: [tasks.md]
     decisions:

@@ -12,13 +12,13 @@ Tasks organized by vertical slices — each feature (Stock Count, Transfer, Writ
 
 ---
 
-- [ ] 1. Project Setup & Mock Services
-  - [ ] 1.1 Scaffold Warehouse Nx libraries
+- [x] 1. Project Setup & Mock Services
+  - [x] 1.1 Scaffold Warehouse Nx libraries
     - **Deps**: None | **Ref**: `design.md` — Implementation/Directory Structure
     - Generate `libs/warehouse/data-access`, `libs/warehouse/feature`, `libs/warehouse/ui` with Nx generators
     - Configure module paths in `tsconfig.base.json`
     - Add warehouse module registration in `apps/api/src/app.module.ts`
-  - [ ] 1.2 Create Mock Service interfaces and implementations
+  - [x] 1.2 Create Mock Service interfaces and implementations
     - **Deps**: 1.1 | **Ref**: `design.md` — Integration Points/Mock Service Interfaces
     - Create `IMockTxLogService`, `IMockMaService`, `IMockStockValidationService`, `IMockPeriodService`, `IMockMasterDataQueryService` interfaces
     - Implement `MockTxLogService` — in-memory TX log array, returns mock TxEntry
@@ -26,44 +26,44 @@ Tasks organized by vertical slices — each feature (Stock Count, Transfer, Writ
     - Implement `MockStockValidationService` — validates against in-memory stock map, includes `validateNotFrozen()` check
     - Implement `MockPeriodService` — always returns OPEN for current period
     - Implement `MockMasterDataQueryService` — returns items/warehouses from JSON
-  - [ ] 1.3 Create JSON fixtures for mock data
+  - [x] 1.3 Create JSON fixtures for mock data
     - **Deps**: 1.1 | **Ref**: `design.md` — Integration Points/JSON Fixtures
     - Create `fixtures/items.json` — 10+ mock items with id, name, sku, unit
     - Create `fixtures/warehouses.json` — 3+ mock warehouses with id, name, code
     - Create `fixtures/stock-balances.json` — stock per item+warehouse with qty and ma
     - Create `fixtures/periods.json` — current period OPEN, previous CLOSED
-  - [ ] 1.4 Create Prisma schema for warehouse entities
+  - [x] 1.4 Create Prisma schema for warehouse entities
     - **Deps**: 1.1 | **Ref**: `design.md` — Data Model
     - Add `CountSession`, `CountLine`, `TransferOrder`, `TransferLine`, `WriteOffRequest`, `WriteOffEvidence` models to Prisma schema under `@@schema("warehouse")`
     - Define enums: `CountSessionStatus`, `TransferStatus`, `WriteOffStatus`
     - Add indexes as specified in design
     - Run `prisma migrate dev` to create migration
-  - [ ] 1.5 Create repository layer
+  - [x] 1.5 Create repository layer
     - **Deps**: 1.4 | **Ref**: `design.md` — Implementation/Directory Structure
     - Create `CountSessionRepository` — CRUD + query by warehouse/status
     - Create `TransferOrderRepository` — CRUD + query by source/dest warehouse
     - Create `WriteOffRepository` — CRUD + query by warehouse/status
     - All repositories use Prisma client with warehouse schema
 
-- [ ] 2. Stock Count — Backend (US-022, US-023)
-  - [ ] 2.1 Implement StockCountService — initiate & freeze
+- [x] 2. Stock Count — Backend (US-022, US-023)
+  - [x] 2.1 Implement StockCountService — initiate & freeze
     - **Deps**: 1.2, 1.5 | **Ref**: `design.md` — Components/StockCountService
     - `initiateCount(dto)` — create CountSession with INITIATED status, create CountLines with `is_frozen=true`, capture `system_qty` and `system_ma` from MockStockValidationService
     - Validate items not already frozen (check CountLine.is_frozen)
     - Transition to COUNTING status after creation
-  - [ ] 2.2 Implement StockCountService — record results & submit
+  - [x] 2.2 Implement StockCountService — record results & submit
     - **Deps**: 2.1 | **Ref**: `design.md` — Components/StockCountService
     - `recordResult(sessionId, lineId, dto)` — set `physical_qty`, calculate `difference`, require `reason_code` if difference != 0
     - `submitForApproval(sessionId)` — validate all lines have physical_qty, transition to PENDING_APPROVAL
     - Validate session is in COUNTING status before recording
-  - [ ] 2.3 Implement StockCountService — approve & POST adjustments
+  - [x] 2.3 Implement StockCountService — approve & POST adjustments
     - **Deps**: 2.2 | **Ref**: `design.md` — Components/StockCountService
     - `approveCount(sessionId, userId)` — transition to APPROVED
     - For each line with difference != 0: POST ADJ_COUNT_UP (if positive) or ADJ_COUNT_DOWN (if negative) via MockTxLogService
     - ADJ_COUNT_UP: call MockMaService.calculateNewMa() for MA recalculation
     - ADJ_COUNT_DOWN: validate stock >= 0 via MockStockValidationService, MA unchanged
     - Set `tx_id` on each CountLine, unfreeze (`is_frozen=false`), transition to COMPLETED
-  - [ ] 2.4 Implement Stock Count API endpoints
+  - [x] 2.4 Implement Stock Count API endpoints
     - **Deps**: 2.3 | **Ref**: `design.md` — API Specification/Stock Count Endpoints
     - `POST /api/v1/warehouse/count-sessions` — create session (Supervisor+)
     - `GET /api/v1/warehouse/count-sessions` — list with pagination
@@ -72,34 +72,34 @@ Tasks organized by vertical slices — each feature (Stock Count, Transfer, Writ
     - `POST /api/v1/warehouse/count-sessions/:id/submit` — submit for approval
     - `POST /api/v1/warehouse/count-sessions/:id/approve` — approve & POST
     - Add DTOs with class-validator, OpenAPI decorators, role guards
-  - [ ] 2.5 Write Stock Count tests
+  - [x] 2.5 Write Stock Count tests
     - **Deps**: 2.4 | **Ref**: `design.md` — Correctness Properties P1-P5, P9
     - Unit tests: StockCountService (initiate, record, submit, approve flows)
     - Integration tests: full API flow via Supertest (create → count → submit → approve)
     - PBT: P1 (freeze blocks TX), P2 (difference accuracy), P3 (stock non-negative after down), P4 (MA correct after up), P5 (MA unchanged after down), P9 (lifecycle order)
 
-- [ ] 3. Stock Transfer — Backend (US-024)
-  - [ ] 3.1 Implement StockTransferService
+- [x] 3. Stock Transfer — Backend (US-024)
+  - [x] 3.1 Implement StockTransferService
     - **Deps**: 1.2, 1.5 | **Ref**: `design.md` — Components/StockTransferService
     - `initiateTransfer(dto)` — validate source != dest, validate source stock sufficient via MockStockValidationService
     - Create TransferOrder + TransferLines
     - Atomic operation: decrease source stock (MA unchanged) + increase dest stock (MA recalculated via MockMaService)
     - POST single ADJ_TRANSFER TX via MockTxLogService
     - Set status to POSTED, record `tx_id` on lines
-  - [ ] 3.2 Implement Stock Transfer API endpoints
+  - [x] 3.2 Implement Stock Transfer API endpoints
     - **Deps**: 3.1 | **Ref**: `design.md` — API Specification/Stock Transfer Endpoints
     - `POST /api/v1/warehouse/transfers` — create & POST transfer (Supervisor+)
     - `GET /api/v1/warehouse/transfers` — list with pagination
     - `GET /api/v1/warehouse/transfers/:id` — detail with lines
     - Add DTOs with class-validator, OpenAPI decorators, role guards
-  - [ ] 3.3 Write Stock Transfer tests
+  - [x] 3.3 Write Stock Transfer tests
     - **Deps**: 3.2 | **Ref**: `design.md` — Correctness Properties P6, P7
     - Unit tests: StockTransferService (happy path, insufficient stock, same warehouse rejection)
     - Integration tests: full API flow via Supertest
     - PBT: P6 (transfer conservation — total stock unchanged), P7 (source non-negative)
 
-- [ ] 4. Stock Write-off — Backend (US-025)
-  - [ ] 4.1 Implement WriteOffService
+- [x] 4. Stock Write-off — Backend (US-025)
+  - [x] 4.1 Implement WriteOffService
     - **Deps**: 1.2, 1.5 | **Ref**: `design.md` — Components/WriteOffService
     - `requestWriteOff(dto)` — create WriteOffRequest with PENDING_APPROVAL, validate stock sufficient, capture current MA as `unit_cost`, calculate `total_loss`
     - `uploadEvidence(writeOffId, file)` — save file to local uploads directory, create WriteOffEvidence record
@@ -107,7 +107,7 @@ Tasks organized by vertical slices — each feature (Stock Count, Transfer, Writ
     - POST ADJ_WRITEOFF via MockTxLogService (decrease stock at MA, MA unchanged)
     - Set status to POSTED, record `tx_id`
     - Handle salvage value if provided
-  - [ ] 4.2 Implement Write-off API endpoints
+  - [x] 4.2 Implement Write-off API endpoints
     - **Deps**: 4.1 | **Ref**: `design.md` — API Specification/Write-off Endpoints
     - `POST /api/v1/warehouse/write-offs` — create request (Supervisor+)
     - `POST /api/v1/warehouse/write-offs/:id/evidence` — upload file (multipart)
@@ -116,7 +116,7 @@ Tasks organized by vertical slices — each feature (Stock Count, Transfer, Writ
     - `GET /api/v1/warehouse/write-offs/:id` — detail with evidence
     - Configure Multer for file upload, add file size limit (10MB)
     - Add DTOs, OpenAPI decorators, role guards
-  - [ ] 4.3 Write Write-off tests
+  - [x] 4.3 Write Write-off tests
     - **Deps**: 4.2 | **Ref**: `design.md` — Correctness Properties P8
     - Unit tests: WriteOffService (request, upload, approve, reject without evidence)
     - Integration tests: full API flow via Supertest including file upload
@@ -176,12 +176,12 @@ Tasks organized by vertical slices — each feature (Stock Count, Transfer, Writ
 | 2.3 | StockCountService — approve & POST | 2.2 | [ ] |
 | 2.4 | Stock Count API endpoints | 2.3 | [ ] |
 | 2.5 | Stock Count tests | 2.4 | [ ] |
-| 3.1 | StockTransferService | 1.2, 1.5 | [ ] |
-| 3.2 | Stock Transfer API endpoints | 3.1 | [ ] |
-| 3.3 | Stock Transfer tests | 3.2 | [ ] |
-| 4.1 | WriteOffService | 1.2, 1.5 | [ ] |
-| 4.2 | Write-off API endpoints | 4.1 | [ ] |
-| 4.3 | Write-off tests | 4.2 | [ ] |
+| 3.1 | StockTransferService | 1.2, 1.5 | [x] |
+| 3.2 | Stock Transfer API endpoints | 3.1 | [x] |
+| 3.3 | Stock Transfer tests | 3.2 | [x] |
+| 4.1 | WriteOffService | 1.2, 1.5 | [x] |
+| 4.2 | Write-off API endpoints | 4.1 | [x] |
+| 4.3 | Write-off tests | 4.2 | [x] |
 | 5.1 | Wire WarehouseModule | 2.4, 3.2, 4.2 | [ ] |
 | 5.2 | Integration test — full module | 5.1 | [ ] |
 | 6.1 | Scaffold Angular warehouse module | 5.1 | [ ] |

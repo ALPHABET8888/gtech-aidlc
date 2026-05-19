@@ -1,0 +1,19 @@
+{
+  "name": "warehouse-ui",
+  "sourceRoot": "libs/warehouse/ui/src",
+  "projectType": "library",
+  "prefix": "warehouse",
+  "tags": ["scope:warehouse", "type:ui"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/warehouse/ui",
+        "tsConfig": "libs/warehouse/ui/tsconfig.lib.json",
+        "main": "libs/warehouse/ui/src/index.ts",
+        "assets": []
+      }
+    }
+  }
+}

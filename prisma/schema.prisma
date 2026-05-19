@@ -23,6 +23,32 @@ enum Role {
   @@schema("master_data")
 }
 
+enum CountSessionStatus {
+  INITIATED
+  COUNTING
+  PENDING_APPROVAL
+  APPROVED
+  COMPLETED
+
+  @@schema("warehouse")
+}
+
+enum TransferStatus {
+  DRAFT
+  POSTED
+
+  @@schema("warehouse")
+}
+
+enum WriteOffStatus {
+  PENDING_APPROVAL
+  APPROVED
+  POSTED
+  REJECTED
+
+  @@schema("warehouse")
+}
+
 // ─── Models ──────────────────────────────────────────────────────────────────
 
 model User {
@@ -55,4 +81,128 @@ model RefreshToken {
   @@index([userId, revokedAt], name: "idx_refresh_token_user_active")
   @@map("refresh_tokens")
   @@schema("master_data")
+}
+
+// ─── Warehouse Schema ────────────────────────────────────────────────────────
+
+model CountSession {
+  id          String             @id @default(uuid()) @db.Uuid
+  warehouseId String             @map("warehouse_id") @db.Uuid
+  status      CountSessionStatus @default(INITIATED)
+  initiatedBy String             @map("initiated_by") @db.Uuid
+  initiatedAt DateTime           @default(now()) @map("initiated_at")
+  completedAt DateTime?          @map("completed_at")
+  approvedBy  String?            @map("approved_by") @db.Uuid
+  approvedAt  DateTime?          @map("approved_at")
+  notes       String?
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  lines CountLine[]
+
+  @@index([warehouseId, status], name: "idx_count_session_warehouse_status")
+  @@index([initiatedAt(sort: Desc)], name: "idx_count_session_initiated_at")
+  @@map("count_sessions")
+  @@schema("warehouse")
+}
+
+model CountLine {
+  id          String   @id @default(uuid()) @db.Uuid
+  sessionId   String   @map("session_id") @db.Uuid
+  itemId      String   @map("item_id") @db.Uuid
+  systemQty   Decimal  @map("system_qty") @db.Decimal(10, 2)
+  physicalQty Decimal? @map("physical_qty") @db.Decimal(10, 2)
+  difference  Decimal? @db.Decimal(10, 2)
+  systemMa    Decimal  @map("system_ma") @db.Decimal(10, 2)
+  isFrozen    Boolean  @default(true) @map("is_frozen")
+  reasonCode  String?  @map("reason_code")
+  txId        String?  @map("tx_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  session CountSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId], name: "idx_count_line_session")
+  @@index([itemId, isFrozen], name: "idx_count_line_item_frozen")
+  @@map("count_lines")
+  @@schema("warehouse")
+}
+
+model TransferOrder {
+  id                String         @id @default(uuid()) @db.Uuid
+  sourceWarehouseId String         @map("source_warehouse_id") @db.Uuid
+  destWarehouseId   String         @map("dest_warehouse_id") @db.Uuid
+  status            TransferStatus @default(DRAFT)
+  initiatedBy       String         @map("initiated_by") @db.Uuid
+  postedAt          DateTime?      @map("posted_at")
+  notes             String?
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  lines TransferLine[]
+
+  @@index([sourceWarehouseId], name: "idx_transfer_source_warehouse")
+  @@index([destWarehouseId], name: "idx_transfer_dest_warehouse")
+  @@index([status], name: "idx_transfer_status")
+  @@map("transfer_orders")
+  @@schema("warehouse")
+}
+
+model TransferLine {
+  id         String   @id @default(uuid()) @db.Uuid
+  transferId String   @map("transfer_id") @db.Uuid
+  itemId     String   @map("item_id") @db.Uuid
+  qty        Decimal  @db.Decimal(10, 2)
+  unitCost   Decimal  @map("unit_cost") @db.Decimal(10, 2)
+  txId       String?  @map("tx_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  transfer TransferOrder @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  @@index([transferId], name: "idx_transfer_line_transfer")
+  @@index([itemId], name: "idx_transfer_line_item")
+  @@map("transfer_lines")
+  @@schema("warehouse")
+}
+
+model WriteOffRequest {
+  id           String        @id @default(uuid()) @db.Uuid
+  warehouseId  String        @map("warehouse_id") @db.Uuid
+  itemId       String        @map("item_id") @db.Uuid
+  qty          Decimal       @db.Decimal(10, 2)
+  unitCost     Decimal       @map("unit_cost") @db.Decimal(10, 2)
+  totalLoss    Decimal       @map("total_loss") @db.Decimal(10, 2)
+  salvageValue Decimal       @default(0) @map("salvage_value") @db.Decimal(10, 2)
+  reason       String
+  status       WriteOffStatus @default(PENDING_APPROVAL)
+  requestedBy  String        @map("requested_by") @db.Uuid
+  approvedBy   String?       @map("approved_by") @db.Uuid
+  approvedAt   DateTime?     @map("approved_at")
+  txId         String?       @map("tx_id") @db.Uuid
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  evidence WriteOffEvidence[]
+
+  @@index([warehouseId, itemId], name: "idx_write_off_warehouse_item")
+  @@index([status], name: "idx_write_off_status")
+  @@index([requestedBy], name: "idx_write_off_requested_by")
+  @@map("write_off_requests")
+  @@schema("warehouse")
+}
+
+model WriteOffEvidence {
+  id         String   @id @default(uuid()) @db.Uuid
+  writeOffId String   @map("write_off_id") @db.Uuid
+  fileName   String   @map("file_name")
+  filePath   String   @map("file_path")
+  fileSize   Int      @map("file_size")
+  mimeType   String   @map("mime_type")
+  uploadedBy String   @map("uploaded_by") @db.Uuid
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  writeOff WriteOffRequest @relation(fields: [writeOffId], references: [id], onDelete: Cascade)
+
+  @@index([writeOffId], name: "idx_write_off_evidence_write_off")
+  @@map("write_off_evidence")
+  @@schema("warehouse")
 }

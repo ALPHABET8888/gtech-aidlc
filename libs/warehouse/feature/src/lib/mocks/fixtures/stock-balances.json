@@ -1,0 +1,122 @@
+[
+  {
+    "itemId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 150.00,
+    "ma": 45.50
+  },
+  {
+    "itemId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "warehouseId": "wh-002b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+    "qty": 80.00,
+    "ma": 45.50
+  },
+  {
+    "itemId": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 200.00,
+    "ma": 135.00
+  },
+  {
+    "itemId": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+    "warehouseId": "wh-003c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+    "qty": 50.00,
+    "ma": 135.00
+  },
+  {
+    "itemId": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 300.00,
+    "ma": 285.75
+  },
+  {
+    "itemId": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+    "warehouseId": "wh-004d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f",
+    "qty": 120.00,
+    "ma": 285.75
+  },
+  {
+    "itemId": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 45.00,
+    "ma": 1250.00
+  },
+  {
+    "itemId": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+    "warehouseId": "wh-002b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+    "qty": 30.00,
+    "ma": 1250.00
+  },
+  {
+    "itemId": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 500.00,
+    "ma": 320.00
+  },
+  {
+    "itemId": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+    "warehouseId": "wh-003c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+    "qty": 200.00,
+    "ma": 320.00
+  },
+  {
+    "itemId": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 75.00,
+    "ma": 890.00
+  },
+  {
+    "itemId": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c",
+    "warehouseId": "wh-002b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+    "qty": 40.00,
+    "ma": 890.00
+  },
+  {
+    "itemId": "a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 1000.00,
+    "ma": 15.25
+  },
+  {
+    "itemId": "b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 60.00,
+    "ma": 450.00
+  },
+  {
+    "itemId": "b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e",
+    "warehouseId": "wh-004d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f",
+    "qty": 25.00,
+    "ma": 450.00
+  },
+  {
+    "itemId": "c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f",
+    "warehouseId": "wh-004d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f",
+    "qty": 35.00,
+    "ma": 580.00
+  },
+  {
+    "itemId": "d0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4a",
+    "warehouseId": "wh-004d5e6f-7a8b-4c9d-0e1f-2a3b4c5d6e7f",
+    "qty": 40.00,
+    "ma": 620.00
+  },
+  {
+    "itemId": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 10.00,
+    "ma": 8500.00
+  },
+  {
+    "itemId": "f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6c",
+    "warehouseId": "wh-001a2b3c-4d5e-4f6a-7b8c-9d0e1f2a3b4c",
+    "qty": 100.00,
+    "ma": 195.00
+  },
+  {
+    "itemId": "f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6c",
+    "warehouseId": "wh-003c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+    "qty": 80.00,
+    "ma": 195.00
+  }
+]

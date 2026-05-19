@@ -1,0 +1,74 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "name": "ท่อ PVC 1/2 นิ้ว",
+    "sku": "PVC-PIPE-050",
+    "unit": "เส้น"
+  },
+  {
+    "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+    "name": "ปูนซีเมนต์ปอร์ตแลนด์ 50 กก.",
+    "sku": "CEM-PORT-050",
+    "unit": "ถุง"
+  },
+  {
+    "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+    "name": "เหล็กเส้น DB16 ยาว 10 ม.",
+    "sku": "STL-DB16-100",
+    "unit": "เส้น"
+  },
+  {
+    "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+    "name": "สีทาภายนอก 5 แกลลอน",
+    "sku": "PNT-EXT-005",
+    "unit": "ถัง"
+  },
+  {
+    "id": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+    "name": "กระเบื้องเซรามิก 60x60 ซม.",
+    "sku": "TIL-CER-060",
+    "unit": "กล่อง"
+  },
+  {
+    "id": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c",
+    "name": "สายไฟ THW 2.5 sq.mm.",
+    "sku": "ELC-THW-025",
+    "unit": "ม้วน"
+  },
+  {
+    "id": "a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d",
+    "name": "น็อตสแตนเลส M10x30",
+    "sku": "HDW-NUT-M10",
+    "unit": "กล่อง"
+  },
+  {
+    "id": "b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e",
+    "name": "ไม้อัด 4x8 ฟุต 15 มม.",
+    "sku": "WOD-PLY-015",
+    "unit": "แผ่น"
+  },
+  {
+    "id": "c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f",
+    "name": "ทรายหยาบ",
+    "sku": "AGG-SND-CRS",
+    "unit": "คิว"
+  },
+  {
+    "id": "d0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4a",
+    "name": "หินคลุก",
+    "sku": "AGG-GRV-MIX",
+    "unit": "คิว"
+  },
+  {
+    "id": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+    "name": "ประตูไม้สัก 80x200 ซม.",
+    "sku": "DOR-TEK-080",
+    "unit": "บาน"
+  },
+  {
+    "id": "f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6c",
+    "name": "หลังคาเมทัลชีท 0.4 มม.",
+    "sku": "ROF-MTL-004",
+    "unit": "แผ่น"
+  }
+]

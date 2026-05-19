@@ -1,0 +1,20 @@
+[
+  {
+    "period": "2025-01",
+    "status": "OPEN",
+    "closedAt": null,
+    "closedBy": null
+  },
+  {
+    "period": "2024-12",
+    "status": "CLOSED",
+    "closedAt": "2025-01-05T10:00:00.000Z",
+    "closedBy": "usr-cfo-001"
+  },
+  {
+    "period": "2024-11",
+    "status": "CLOSED",
+    "closedAt": "2024-12-03T09:30:00.000Z",
+    "closedBy": "usr-cfo-001"
+  }
+]
