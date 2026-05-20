@@ -49,18 +49,21 @@ import { InvoiceItem, IssueInvoiceRequest, IssueTempDoRequest } from '../../mode
     <form #invoiceForm="ngForm" (ngSubmit)="onSubmit(invoiceForm.valid)" novalidate>
       <!-- Warehouse -->
       <div class="form-group">
-        <label for="warehouseId">Warehouse ID *</label>
-        <input
+        <label for="warehouseId">คลังสินค้า *</label>
+        <select
           id="warehouseId"
-          type="text"
           [(ngModel)]="warehouseId"
           name="warehouseId"
           required
-          placeholder="Enter warehouse UUID"
           #warehouseField="ngModel"
-        />
+        >
+          <option value="">-- เลือกคลังสินค้า --</option>
+          @for (wh of state.activeWarehouses(); track wh.id) {
+            <option [value]="wh.id">{{ wh.code }} - {{ wh.name }}</option>
+          }
+        </select>
         @if (warehouseField.invalid && warehouseField.touched) {
-          <span class="field-error">Warehouse ID is required</span>
+          <span class="field-error">กรุณาเลือกคลังสินค้า</span>
         }
       </div>
 
@@ -74,15 +77,18 @@ import { InvoiceItem, IssueInvoiceRequest, IssueTempDoRequest } from '../../mode
         @for (item of items; track $index; let i = $index) {
           <div class="item-row">
             <div class="form-group">
-              <label [for]="'itemId_' + i">Item ID *</label>
-              <input
+              <label [for]="'itemId_' + i">สินค้า *</label>
+              <select
                 [id]="'itemId_' + i"
-                type="text"
                 [(ngModel)]="item.itemId"
                 [name]="'itemId_' + i"
                 required
-                placeholder="Item UUID"
-              />
+              >
+                <option value="">-- เลือกสินค้า --</option>
+                @for (it of state.activeItems(); track it.id) {
+                  <option [value]="it.id">{{ it.code }} - {{ it.name }}</option>
+                }
+              </select>
             </div>
             <div class="form-group">
               <label [for]="'qty_' + i">Qty *</label>
@@ -155,6 +161,7 @@ export class InvoiceCreateComponent implements OnInit, OnDestroy {
   items: InvoiceItem[] = [{ itemId: '', qty: 1 }];
 
   ngOnInit(): void {
+    this.state.loadMasterData();
     this.joId = this.route.snapshot.queryParamMap.get('joId') || '';
     const mode = this.route.snapshot.queryParamMap.get('mode');
     this.issueTempDo = mode === 'temp-do';

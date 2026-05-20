@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { IStockValidationService, StockValidationResult } from '@autoflow/shared-types';
+import { IStockValidationService } from '@autoflow/shared-types';
 
 /**
  * Mock implementation of IStockValidationService.
@@ -59,19 +59,31 @@ export class MockStockValidationService implements IStockValidationService {
     this.defaultBalance = balance;
   }
 
-  async validateStockAvailability(
+  async validateStockAvailable(
     itemId: string,
     warehouseId: string,
-    requiredQty: number,
-  ): Promise<StockValidationResult> {
+    qty: number,
+  ): Promise<void> {
     const key = `${itemId}:${warehouseId}`;
+
+    // Check frozen
+    if (this.frozenWarehouses.has(warehouseId)) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'STOCK_FROZEN',
+          message: `Stock frozen during count for item ${itemId} in warehouse ${warehouseId}`,
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
 
     if (this.failingItems.has(key)) {
       throw new HttpException(
         {
           statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
           error: 'STOCK_NEGATIVE',
-          message: `Insufficient stock for item ${itemId} in warehouse ${warehouseId}. Required: ${requiredQty}, Available: 0`,
+          message: `Insufficient stock for item ${itemId} in warehouse ${warehouseId}. Required: ${qty}, Available: 0`,
         },
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
@@ -79,31 +91,21 @@ export class MockStockValidationService implements IStockValidationService {
 
     const available = this.stockBalances.get(key) ?? this.defaultBalance;
 
-    if (available < requiredQty) {
+    if (available < qty) {
       throw new HttpException(
         {
           statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
           error: 'STOCK_NEGATIVE',
-          message: `Insufficient stock for item ${itemId} in warehouse ${warehouseId}. Required: ${requiredQty}, Available: ${available}`,
+          message: `Insufficient stock for item ${itemId} in warehouse ${warehouseId}. Required: ${qty}, Available: ${available}`,
         },
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-
-    return {
-      valid: true,
-      availableQty: available,
-      requestedQty: requiredQty,
-    };
   }
 
   async getStockBalance(itemId: string, warehouseId: string): Promise<number> {
     const key = `${itemId}:${warehouseId}`;
     return this.stockBalances.get(key) ?? this.defaultBalance;
-  }
-
-  async isStockFrozen(warehouseId: string): Promise<boolean> {
-    return this.frozenWarehouses.has(warehouseId);
   }
 
   /**

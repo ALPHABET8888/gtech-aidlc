@@ -209,6 +209,29 @@ export class TxLogService implements ITxLogService {
   }
 
   /**
+   * Post a DRAFT transaction (transition to POSTED).
+   * Satisfies ITxLogService.postTx().
+   */
+  async postTx(txId: string, userId: string): Promise<TxLog> {
+    const tx = await this.txLogRepository.findById(txId);
+    if (!tx) {
+      throw new ImmutableTxException(txId);
+    }
+    if (tx.txStatus !== TxStatus.DRAFT) {
+      throw new ImmutableTxException(txId);
+    }
+    // Update to POSTED
+    return this.prisma.txLog.update({
+      where: { id: txId },
+      data: {
+        txStatus: TxStatus.POSTED,
+        approvedBy: userId,
+        approvedAt: new Date(),
+      },
+    });
+  }
+
+  /**
    * Enforce immutability: reject any modification to a POSTED transaction.
    * Only DRAFT→POSTED and POSTED→VOIDED status transitions are allowed
    * (handled by TxLogRepository.updateStatus).

@@ -22,13 +22,13 @@ import { TransferQueryDto } from '../dto/transfer-query.dto';
 
 @ApiTags('warehouse / stock-transfer')
 @ApiBearerAuth()
-@Controller('api/v1/warehouse/transfers')
+@Controller('warehouse/transfers')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class TransferController {
   constructor(private readonly stockTransferService: StockTransferService) {}
 
   @Post()
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'Create and POST a stock transfer between warehouses (atomic)' })
   @ApiResponse({
     status: 201,
@@ -46,7 +46,7 @@ export class TransferController {
   }
 
   @Get()
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.STORE)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.STORE, Role.ADMIN)
   @ApiOperation({ summary: 'List transfer orders with filters and pagination' })
   @ApiResponse({
     status: 200,
@@ -72,7 +72,7 @@ export class TransferController {
   }
 
   @Get(':id')
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.STORE)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.STORE, Role.ADMIN)
   @ApiOperation({ summary: 'Get transfer order detail with lines' })
   @ApiParam({ name: 'id', description: 'Transfer order ID', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Transfer order detail with lines' })

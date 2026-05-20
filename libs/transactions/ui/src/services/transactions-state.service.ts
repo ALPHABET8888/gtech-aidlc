@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { TransactionsApiService } from './transactions-api.service';
+import { MasterDataApiService } from './master-data-api.service';
 import {
   JobOrder,
   JOStatus,
@@ -41,6 +42,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class TransactionsStateService {
   private readonly api = inject(TransactionsApiService);
+  private readonly masterDataApi = inject(MasterDataApiService);
 
   // ── Job Order List State ─────────────────────────────────
 
@@ -248,31 +250,53 @@ export class TransactionsStateService {
     this.selectedJobOrderError.set(null);
   }
 
-  // ── Master Data (Mock) ───────────────────────────────────
+  // ── Master Data (loaded from API) ─────────────────────────
 
-  readonly vendors = signal<MasterVendor[]>([
-    { id: 'b2c3d4e5-2222-4000-8000-000000000001', code: 'VND-001', name: 'บริษัท ออโต้พาร์ท จำกัด', taxId: '0105500000001', contactName: 'คุณสมชาย', isActive: true },
-    { id: 'b2c3d4e5-2222-4000-8000-000000000002', code: 'VND-002', name: 'บริษัท น้ำมันไทย จำกัด', taxId: '0105500000002', contactName: 'คุณวิชัย', isActive: true },
-    { id: 'b2c3d4e5-2222-4000-8000-000000000003', code: 'VND-003', name: 'บริษัท อะไหล่ยนต์ จำกัด', taxId: '0105500000003', contactName: 'คุณประเสริฐ', isActive: true },
-  ]);
+  readonly vendors = signal<MasterVendor[]>([]);
+  readonly items = signal<MasterItem[]>([]);
+  readonly warehouses = signal<MasterWarehouse[]>([]);
 
-  readonly items = signal<MasterItem[]>([
-    { id: 'a1b2c3d4-1111-4000-8000-000000000001', code: 'ITM-001', name: 'น้ำมันเครื่อง 5W-30', unit: 'LTR', category: 'น้ำมันหล่อลื่น', isActive: true },
-    { id: 'a1b2c3d4-1111-4000-8000-000000000002', code: 'ITM-002', name: 'ผ้าเบรค หน้า', unit: 'SET', category: 'อะไหล่เบรค', isActive: true },
-    { id: 'a1b2c3d4-1111-4000-8000-000000000003', code: 'ITM-003', name: 'กรองอากาศ', unit: 'PCS', category: 'ไส้กรอง', isActive: true },
-    { id: 'a1b2c3d4-1111-4000-8000-000000000004', code: 'ITM-004', name: 'หัวเทียน NGK', unit: 'PCS', category: 'ระบบจุดระเบิด', isActive: true },
-    { id: 'a1b2c3d4-1111-4000-8000-000000000005', code: 'ITM-005', name: 'น้ำยาหม้อน้ำ', unit: 'LTR', category: 'น้ำยาหล่อเย็น', isActive: true },
-  ]);
-
-  readonly warehouses = signal<MasterWarehouse[]>([
-    { id: 'd4e5f6a7-4444-4000-8000-000000000001', code: 'WH-001', name: 'คลังสินค้าหลัก', location: 'อาคาร A ชั้น 1', isActive: true },
-    { id: 'd4e5f6a7-4444-4000-8000-000000000002', code: 'WH-002', name: 'คลังสินค้าสำรอง', location: 'อาคาร B ชั้น 1', isActive: true },
-    { id: 'd4e5f6a7-4444-4000-8000-000000000003', code: 'WH-003', name: 'คลังสินค้าเสีย', location: 'อาคาร C', isActive: true },
-  ]);
+  readonly masterDataLoading = signal(false);
+  readonly masterDataError = signal<string | null>(null);
 
   readonly activeVendors = computed(() => this.vendors().filter((v) => v.isActive));
   readonly activeItems = computed(() => this.items().filter((i) => i.isActive));
   readonly activeWarehouses = computed(() => this.warehouses().filter((w) => w.isActive));
+
+  /**
+   * Load all master data (vendors, items, warehouses, customers) from the real API.
+   * Call this on component init for pages that need dropdown data.
+   */
+  loadMasterData(): void {
+    this.masterDataLoading.set(true);
+    this.masterDataError.set(null);
+
+    this.masterDataApi.getActiveVendors().subscribe({
+      next: (data) => this.vendors.set(data),
+      error: (err) => this.masterDataError.set(err.error?.message || 'Failed to load vendors'),
+    });
+
+    this.masterDataApi.getActiveItems().subscribe({
+      next: (data) => this.items.set(data),
+      error: (err) => this.masterDataError.set(err.error?.message || 'Failed to load items'),
+    });
+
+    this.masterDataApi.getActiveWarehouses().subscribe({
+      next: (data) => {
+        this.warehouses.set(data);
+        this.masterDataLoading.set(false);
+      },
+      error: (err) => {
+        this.masterDataError.set(err.error?.message || 'Failed to load warehouses');
+        this.masterDataLoading.set(false);
+      },
+    });
+
+    this.masterDataApi.getActiveCustomers().subscribe({
+      next: (data) => this.customers.set(data),
+      error: (err) => this.masterDataError.set(err.error?.message || 'Failed to load customers'),
+    });
+  }
 
   // ── GR/IR Clearing State ─────────────────────────────────
 
@@ -410,13 +434,9 @@ export class TransactionsStateService {
   readonly arOpenItemsLoading = signal(false);
   readonly arOpenItemsMeta = signal<PaginationMeta>({ page: 1, limit: 20, total: 0, totalPages: 0 });
 
-  // ── Customers (Mock) ─────────────────────────────────────
+  // ── Customers (loaded from API) ───────────────────────────
 
-  readonly customers = signal<MasterCustomer[]>([
-    { id: 'c3d4e5f6-3333-4000-8000-000000000001', code: 'CUS-001', name: 'บริษัท เอบีซี จำกัด', taxId: '0105500000010', contactName: 'คุณสมศรี', isActive: true },
-    { id: 'c3d4e5f6-3333-4000-8000-000000000002', code: 'CUS-002', name: 'ห้างหุ้นส่วน XYZ', taxId: '0105500000011', contactName: 'คุณวิไล', isActive: true },
-    { id: 'c3d4e5f6-3333-4000-8000-000000000003', code: 'CUS-003', name: 'บริษัท สยามมอเตอร์ จำกัด', taxId: '0105500000012', contactName: 'คุณประสิทธิ์', isActive: true },
-  ]);
+  readonly customers = signal<MasterCustomer[]>([]);
 
   readonly activeCustomers = computed(() => this.customers().filter((c) => c.isActive));
 

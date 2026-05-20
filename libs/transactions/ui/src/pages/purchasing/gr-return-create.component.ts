@@ -201,6 +201,10 @@ export class GrReturnCreateComponent {
   readonly state = inject(TransactionsStateService);
   private readonly router = inject(Router);
 
+  constructor() {
+    this.state.loadMasterData();
+  }
+
   refGrTxId = '';
   vendorId = '';
   warehouseId = '';

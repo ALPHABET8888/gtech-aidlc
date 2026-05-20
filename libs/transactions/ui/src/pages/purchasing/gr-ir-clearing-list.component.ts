@@ -152,6 +152,7 @@ export class GrIrClearingListComponent implements OnInit {
   readonly currentPage = signal(1);
 
   ngOnInit(): void {
+    this.state.loadMasterData();
     this.loadClearings();
   }
 

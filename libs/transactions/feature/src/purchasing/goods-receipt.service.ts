@@ -5,7 +5,6 @@ import {
   IStockValidationService,
   IPeriodService,
   TxType,
-  TxLogEntry,
 } from '@autoflow/shared-types';
 import {
   CreateGoodsReceiptDto,
@@ -41,57 +40,40 @@ export class GoodsReceiptService {
   /**
    * Create Goods Receipt (GR_RECEIVE).
    * - Validates period is open
-   * - Calculates MA for each item
-   * - Creates TX Log entry
+   * - Creates TX Log entry (pipeline handles MA + stock internally)
    * - Creates AP Open Item
    */
   async createGoodsReceipt(dto: CreateGoodsReceiptDto, userId: string) {
     // 1. Validate period
     await this.periodService.validatePeriodOpen(dto.period);
 
-    // 2. Process each item — calculate MA and create TX entries
-    const txEntries: TxLogEntry[] = [];
+    // 2. Process each item — create TX entries via pipeline
+    const txEntries: unknown[] = [];
     let totalApAmount = 0;
 
     for (const item of dto.items) {
       const totalCostPerItem = (item.unitCost + item.landedCost) * item.qty;
       totalApAmount += totalCostPerItem;
 
-      // Get current MA for the item
-      const currentMa = await this.maService.getCurrentMa(item.itemId, dto.warehouseId);
-      const currentStock = await this.stockService.getStockBalance(item.itemId, dto.warehouseId);
+      // Create TX log entry — the pipeline handles MA calculation and stock update
+      const txEntry = await this.txLogService.createTx(
+        {
+          txType: TxType.GR_RECEIVE,
+          txDate: new Date().toISOString(),
+          period: dto.period,
+          itemId: item.itemId,
+          warehouseId: dto.warehouseId,
+          qty: item.qty,
+          unitCost: item.unitCost + item.landedCost,
+          totalCost: totalCostPerItem,
+          vendorId: dto.vendorId,
+          apAmount: totalCostPerItem,
+          taxInvoiceNo: dto.taxInvoiceNo,
+        },
+        userId,
+      );
 
-      // Calculate new MA
-      const maResult = this.maService.calculateMa({
-        currentQty: currentStock,
-        currentMa,
-        qtyChange: item.qty,
-        unitCost: item.unitCost + item.landedCost,
-      });
-
-      // Create TX log entry
-      const txEntry = await this.txLogService.createTx({
-        txType: TxType.GR_RECEIVE,
-        txDate: new Date().toISOString(),
-        period: dto.period,
-        itemId: item.itemId,
-        warehouseId: dto.warehouseId,
-        qty: item.qty,
-        unitCost: item.unitCost + item.landedCost,
-        totalCost: totalCostPerItem,
-        cogsUnit: null,
-        vendorId: dto.vendorId,
-        customerId: null,
-        apAmount: totalCostPerItem,
-        arAmount: 0,
-        parentTxId: null,
-        createdBy: userId,
-        postedBy: null,
-      });
-
-      // Post the TX
-      const postedTx = await this.txLogService.postTx(txEntry.txId, userId);
-      txEntries.push(postedTx);
+      txEntries.push(txEntry);
     }
 
     // 3. Calculate VAT (7%)
@@ -99,9 +81,12 @@ export class GoodsReceiptService {
     const grandTotal = Math.round((totalApAmount + vatAmount) * 100) / 100;
 
     // 4. Create AP Open Item via ApService
+    const firstTx = txEntries[0] as { id?: string; txId?: string };
+    const txId = firstTx.id ?? firstTx.txId ?? '';
+
     const apOpenItem = await this.apService.createApOpenItem({
       vendorId: dto.vendorId,
-      txId: txEntries[0].txId,
+      txId,
       txType: TxType.GR_RECEIVE,
       originalAmount: grandTotal,
       vatAmount,
@@ -109,17 +94,11 @@ export class GoodsReceiptService {
       period: dto.period,
     });
 
-    // 5. Get MA before/after from first item for response
-    const firstItem = dto.items[0];
-    const currentMa = await this.maService.getCurrentMa(firstItem.itemId, dto.warehouseId);
-
     return {
       txEntry: {
-        id: txEntries[0].txId,
+        id: txId,
         txType: TxType.GR_RECEIVE,
         status: 'POSTED',
-        maBefore: txEntries[0].maBefore,
-        maAfter: txEntries[0].maAfter,
       },
       apOpenItem: {
         id: apOpenItem.id,
@@ -138,8 +117,9 @@ export class GoodsReceiptService {
    * - Opens GR/IR Clearing
    */
   async createGoodsReturn(dto: CreateGoodsReturnDto, userId: string) {
-    // 1. Validate period (use current period)
-    const currentPeriod = this.periodService.getCurrentPeriod();
+    // 1. Validate period
+    const now = new Date();
+    const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     await this.periodService.validatePeriodOpen(currentPeriod);
 
     // 2. Validate the referenced GR exists
@@ -149,12 +129,12 @@ export class GoodsReceiptService {
     }
 
     // 3. Process each item — validate stock and create TX
-    const txEntries: TxLogEntry[] = [];
+    const txEntries: unknown[] = [];
     let totalClearingAmount = 0;
 
     for (const item of dto.items) {
       // Validate stock availability for return
-      await this.stockService.validateStockAvailability(
+      await this.stockService.validateStockAvailable(
         item.itemId,
         dto.warehouseId,
         item.qty,
@@ -162,40 +142,35 @@ export class GoodsReceiptService {
 
       // Get current MA for clearing amount calculation
       const currentMa = await this.maService.getCurrentMa(item.itemId, dto.warehouseId);
-      const currentStock = await this.stockService.getStockBalance(item.itemId, dto.warehouseId);
       const itemClearingAmount = Math.round(item.qty * currentMa * 100) / 100;
       totalClearingAmount += itemClearingAmount;
 
-      // Calculate stock-out (MA doesn't change on stock-out)
-      const maResult = this.maService.calculateStockOut(currentStock, currentMa, item.qty);
+      // Create TX log entry — pipeline handles stock decrease
+      const txEntry = await this.txLogService.createTx(
+        {
+          txType: TxType.GR_RETURN,
+          txDate: new Date().toISOString(),
+          period: currentPeriod,
+          itemId: item.itemId,
+          warehouseId: dto.warehouseId,
+          qty: item.qty,
+          unitCost: currentMa,
+          totalCost: itemClearingAmount,
+          vendorId: dto.vendorId,
+          parentTxId: dto.refGrTxId,
+        },
+        userId,
+      );
 
-      // Create TX log entry
-      const txEntry = await this.txLogService.createTx({
-        txType: TxType.GR_RETURN,
-        txDate: new Date().toISOString(),
-        period: currentPeriod,
-        itemId: item.itemId,
-        warehouseId: dto.warehouseId,
-        qty: -item.qty, // negative for stock decrease
-        unitCost: currentMa,
-        totalCost: -itemClearingAmount,
-        cogsUnit: null,
-        vendorId: dto.vendorId,
-        customerId: null,
-        apAmount: 0,
-        arAmount: 0,
-        parentTxId: dto.refGrTxId,
-        createdBy: userId,
-        postedBy: null,
-      });
-
-      const postedTx = await this.txLogService.postTx(txEntry.txId, userId);
-      txEntries.push(postedTx);
+      txEntries.push(txEntry);
     }
 
-    // 4. Open GR/IR Clearing (one clearing per return TX, using first item)
+    // 4. Open GR/IR Clearing
+    const firstTx = txEntries[0] as { id?: string; txId?: string };
+    const txId = firstTx.id ?? firstTx.txId ?? '';
+
     const clearing = await this.clearingService.openClearing({
-      grReturnTxId: txEntries[0].txId,
+      grReturnTxId: txId,
       grReceiveTxId: dto.refGrTxId,
       vendorId: dto.vendorId,
       itemId: dto.items[0].itemId,
@@ -205,7 +180,7 @@ export class GoodsReceiptService {
 
     return {
       txEntry: {
-        id: txEntries[0].txId,
+        id: txId,
         txType: TxType.GR_RETURN,
         status: 'POSTED',
       },
@@ -226,7 +201,8 @@ export class GoodsReceiptService {
    */
   async receiveReplacement(dto: CreateGrReplacementDto, userId: string) {
     // 1. Validate period
-    const currentPeriod = this.periodService.getCurrentPeriod();
+    const now = new Date();
+    const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     await this.periodService.validatePeriodOpen(currentPeriod);
 
     // 2. Validate clearing exists and is OPEN
@@ -235,62 +211,47 @@ export class GoodsReceiptService {
       throw new ClearingNotOpenException(dto.clearingId);
     }
 
-    // 3. Process each item — calculate MA and create TX
-    const txEntries: TxLogEntry[] = [];
+    // 3. Process each item — create TX via pipeline
+    const txEntries: unknown[] = [];
 
     for (const item of dto.items) {
-      // Get current MA
-      const currentMa = await this.maService.getCurrentMa(item.itemId, dto.warehouseId);
-      const currentStock = await this.stockService.getStockBalance(item.itemId, dto.warehouseId);
-
       // Use clearing amount / qty as the unit cost for replacement
       const unitCost = Number(clearing.clearingAmount) / Number(clearing.qty);
 
-      // Calculate new MA with replacement goods
-      const maResult = this.maService.calculateMa({
-        currentQty: currentStock,
-        currentMa,
-        qtyChange: item.qty,
-        unitCost,
-      });
+      // Create TX log entry — pipeline handles MA recalculation
+      const txEntry = await this.txLogService.createTx(
+        {
+          txType: TxType.GR_REPLACEMENT,
+          txDate: new Date().toISOString(),
+          period: currentPeriod,
+          itemId: item.itemId,
+          warehouseId: dto.warehouseId,
+          qty: item.qty,
+          unitCost,
+          totalCost: Math.round(item.qty * unitCost * 100) / 100,
+          vendorId: clearing.vendorId,
+          parentTxId: dto.refGrReturnTxId,
+        },
+        userId,
+      );
 
-      // Create TX log entry
-      const txEntry = await this.txLogService.createTx({
-        txType: TxType.GR_REPLACEMENT,
-        txDate: new Date().toISOString(),
-        period: currentPeriod,
-        itemId: item.itemId,
-        warehouseId: dto.warehouseId,
-        qty: item.qty,
-        unitCost,
-        totalCost: Math.round(item.qty * unitCost * 100) / 100,
-        cogsUnit: null,
-        vendorId: clearing.vendorId,
-        customerId: null,
-        apAmount: 0,
-        arAmount: 0,
-        parentTxId: dto.refGrReturnTxId,
-        createdBy: userId,
-        postedBy: null,
-      });
-
-      const postedTx = await this.txLogService.postTx(txEntry.txId, userId);
-      txEntries.push(postedTx);
+      txEntries.push(txEntry);
     }
 
     // 4. Close clearing by replacement (PPV = 0)
+    const firstTx = txEntries[0] as { id?: string; txId?: string };
+    const txId = firstTx.id ?? firstTx.txId ?? '';
+
     const closedClearing = await this.clearingService.closeByReplacement(
       dto.clearingId,
-      txEntries[0].txId,
+      txId,
     );
 
     return {
       txEntry: {
-        id: txEntries[0].txId,
+        id: txId,
         txType: TxType.GR_REPLACEMENT,
         status: 'POSTED',
-        maBefore: txEntries[0].maBefore,
-        maAfter: txEntries[0].maAfter,
       },
       clearing: {
         id: closedClearing.id,

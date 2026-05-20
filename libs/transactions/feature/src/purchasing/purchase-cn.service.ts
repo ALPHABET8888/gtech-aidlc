@@ -174,12 +174,13 @@ export class PurchaseCnService {
     if (remainingQty > 0) {
       // MA adjustment: reduce total value by inventory adjustment
       // New MA = (currentStock * currentMA - inventoryAdjustment) / currentStock
-      maResult = this.maService.calculateMa({
-        currentQty: currentStock,
-        currentMa,
-        qtyChange: 0, // No qty change, just value adjustment
-        unitCost: currentMa - (inventoryAdjustment / currentStock),
-      });
+      maResult = await this.maService.calculateNewMa(
+        itemId,
+        warehouseId,
+        0, // No qty change, just value adjustment
+        inventoryAdjustment,
+        false, // treat as decrease to reduce total value
+      );
     }
 
     // 8. Create TX log entry

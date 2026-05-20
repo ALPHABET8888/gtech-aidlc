@@ -3,6 +3,21 @@
 
 @include mat.core();
 
+$autoflow-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$blue-palette,
+    tertiary: mat.$green-palette,
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+html {
+  @include mat.all-component-themes($autoflow-theme);
+}
+
 * {
   margin: 0;
   padding: 0;

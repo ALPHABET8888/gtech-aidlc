@@ -55,7 +55,7 @@ export class StockTransferService {
     // 3. Validate source stock is sufficient for each line item
     for (const line of dto.lines) {
       try {
-        await this.stockValidationService.validateStockAvailability(
+        await this.stockValidationService.validateStockAvailable(
           line.itemId,
           dto.sourceWarehouseId,
           line.qty,
@@ -144,12 +144,13 @@ export class StockTransferService {
       );
 
       // Recalculate MA at destination using the transfer unit cost
-      this.maService.calculateMa({
-        currentQty: destCurrentQty,
-        currentMa: destCurrentMa,
-        qtyChange: lineInput.qty,
-        unitCost: lineInput.unitCost,
-      });
+      await this.maService.calculateNewMa(
+        lineInput.itemId,
+        dto.destWarehouseId,
+        lineInput.qty,
+        lineInput.qty * lineInput.unitCost,
+        true, // stock increase at destination
+      );
     }
 
     // 9. Set status to POSTED and record tx_id on all lines

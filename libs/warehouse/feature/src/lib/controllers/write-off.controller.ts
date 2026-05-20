@@ -29,13 +29,13 @@ import { WriteOffQueryDto } from '../dto/write-off-query.dto';
 
 @ApiTags('warehouse / write-off')
 @ApiBearerAuth()
-@Controller('api/v1/warehouse/write-offs')
+@Controller('warehouse/write-offs')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class WriteOffController {
   constructor(private readonly writeOffService: WriteOffService) {}
 
   @Post()
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'Create a write-off request (evidence must be uploaded before approval)' })
   @ApiResponse({
     status: 201,
@@ -53,7 +53,7 @@ export class WriteOffController {
   }
 
   @Post(':id/evidence')
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
@@ -105,7 +105,7 @@ export class WriteOffController {
 
   @Post(':id/approve')
   @HttpCode(HttpStatus.OK)
-  @Roles(Role.CFO)
+  @Roles(Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'CFO approve write-off — POST ADJ_WRITEOFF transaction' })
   @ApiParam({ name: 'id', description: 'Write-off request ID', format: 'uuid' })
   @ApiResponse({
@@ -128,7 +128,7 @@ export class WriteOffController {
   }
 
   @Get()
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'List write-off requests with filters and pagination' })
   @ApiResponse({
     status: 200,
@@ -154,7 +154,7 @@ export class WriteOffController {
   }
 
   @Get(':id')
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'Get write-off request detail with evidence' })
   @ApiParam({ name: 'id', description: 'Write-off request ID', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Write-off request detail with evidence files' })

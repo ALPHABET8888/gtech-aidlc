@@ -40,7 +40,7 @@ export class MockPeriodService implements IPeriodService {
     this.failAll = fail;
   }
 
-  async validatePeriodOpen(period: string): Promise<boolean> {
+  async validatePeriodOpen(period: string): Promise<void> {
     if (this.failAll) {
       throw new HttpException(
         {
@@ -63,8 +63,6 @@ export class MockPeriodService implements IPeriodService {
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-
-    return true;
   }
 
   getCurrentPeriod(): string {
@@ -74,28 +72,30 @@ export class MockPeriodService implements IPeriodService {
     return `${year}-${month}`;
   }
 
-  async closePeriod(period: string, closedBy: string): Promise<PeriodInfo> {
-    const info: PeriodInfo = {
-      period,
-      status: PeriodStatus.CLOSED,
-      closedAt: new Date().toISOString(),
-      closedBy,
-    };
-    this.closedPeriods.set(period, info);
-    return info;
+  async getAll(): Promise<PeriodInfo[]> {
+    const periods: PeriodInfo[] = [];
+    this.closedPeriods.forEach((info) => periods.push(info));
+    return periods;
   }
 
-  async getPeriodInfo(period: string): Promise<PeriodInfo | null> {
-    const closed = this.closedPeriods.get(period);
-    if (closed) {
-      return closed;
-    }
+  async create(period: string, _openedBy: string): Promise<PeriodInfo> {
     return {
       period,
       status: PeriodStatus.OPEN,
       closedAt: null,
       closedBy: null,
     };
+  }
+
+  async close(id: string, closedBy: string): Promise<PeriodInfo> {
+    const info: PeriodInfo = {
+      period: id,
+      status: PeriodStatus.CLOSED,
+      closedAt: new Date().toISOString(),
+      closedBy,
+    };
+    this.closedPeriods.set(id, info);
+    return info;
   }
 
   /**

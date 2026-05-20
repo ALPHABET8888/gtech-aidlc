@@ -7,9 +7,6 @@ CREATE TYPE "transactions"."TxStatus" AS ENUM ('DRAFT', 'POSTED', 'VOIDED');
 -- CreateEnum
 CREATE TYPE "transactions"."VatType" AS ENUM ('INPUT', 'OUTPUT', 'NONE');
 
--- CreateEnum
-CREATE TYPE "transactions"."ApArStatus" AS ENUM ('OPEN', 'PARTIAL', 'CLOSED');
-
 -- CreateTable
 CREATE TABLE "transactions"."tx_log" (
     "id" UUID NOT NULL,

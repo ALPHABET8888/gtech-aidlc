@@ -2,12 +2,19 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '@autoflow/shared-prisma';
 import { AuthModule } from '@autoflow/shared-auth';
 import {
+  MasterDataModule,
+  TxLogService,
+  MaCalculationService,
+  StockValidationService,
+  PeriodService,
+  RefChainValidatorService,
+} from '@autoflow/master-data-feature';
+import {
   JobOrderRepository,
   ApOpenItemRepository,
   ArOpenItemRepository,
   GrIrClearingRepository,
 } from '@autoflow/transactions-data-access';
-import { MasterDataMockModule } from './mocks/master-data-mock.module';
 import { JobOrderService } from './sales/job-order.service';
 import { InvoiceService } from './sales/invoice.service';
 import { SalesController } from './sales/sales.controller';
@@ -21,10 +28,11 @@ import { GoodsReceiptService } from './purchasing/goods-receipt.service';
 import { GrIrClearingService } from './purchasing/gr-ir-clearing.service';
 import { PurchaseCnService } from './purchasing/purchase-cn.service';
 import { PurchasingController } from './purchasing/purchasing.controller';
+import { MasterDataLookupAdapter } from './adapters/master-data-lookup.adapter';
 
 @Module({
   imports: [
-    MasterDataMockModule, // ← swap to real MasterDataModule when ready
+    MasterDataModule,
     AuthModule,
     PrismaModule,
   ],
@@ -35,6 +43,13 @@ import { PurchasingController } from './purchasing/purchasing.controller';
     ApOpenItemRepository,
     ArOpenItemRepository,
     GrIrClearingRepository,
+    // DI token bindings — wire real services to interface tokens
+    { provide: 'ITxLogService', useExisting: TxLogService },
+    { provide: 'IMaCalculationService', useExisting: MaCalculationService },
+    { provide: 'IStockValidationService', useExisting: StockValidationService },
+    { provide: 'IPeriodService', useExisting: PeriodService },
+    { provide: 'IRefChainService', useExisting: RefChainValidatorService },
+    { provide: 'IMasterDataLookupService', useExisting: MasterDataLookupAdapter },
     // Sales services
     JobOrderService,
     InvoiceService,
@@ -47,6 +62,8 @@ import { PurchasingController } from './purchasing/purchasing.controller';
     GoodsReceiptService,
     GrIrClearingService,
     PurchaseCnService,
+    // Adapter for IMasterDataLookupService
+    MasterDataLookupAdapter,
   ],
   exports: [JobOrderService, InvoiceService, SalesCnService, ApService, ArService, PaymentMatchingService, GoodsReceiptService, GrIrClearingService, PurchaseCnService],
 })

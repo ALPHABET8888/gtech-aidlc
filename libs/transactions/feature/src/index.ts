@@ -1,5 +1,5 @@
 export { TransactionsModule } from './transactions.module';
-export { MasterDataMockModule } from './mocks/master-data-mock.module';
+export { MasterDataLookupAdapter } from './adapters/master-data-lookup.adapter';
 
 // AP/AR Services
 export { ApService, CreateApOpenItemInput } from './ap-ar';

@@ -149,6 +149,7 @@ export class ApListComponent implements OnInit {
   filterStatus = '';
 
   ngOnInit(): void {
+    this.state.loadMasterData();
     this.loadData();
   }
 

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
   IMaCalculationService,
-  MaCalculationInput,
   MaCalculationResult,
 } from '@autoflow/shared-types';
 
@@ -35,39 +34,44 @@ export class MockMaService implements IMaCalculationService {
   }
 
   /**
-   * Calculate new MA for a stock-in transaction.
-   * Formula: newMA = (currentQty * currentMA + incomingQty * incomingCost) / (currentQty + incomingQty)
+   * Calculate new MA and update stock balance atomically.
    */
-  calculateMa(input: MaCalculationInput): MaCalculationResult {
-    const { currentQty, currentMa, qtyChange, unitCost } = input;
-    const totalValueBefore = currentQty * currentMa;
-    const incomingValue = qtyChange * unitCost;
-    const newQty = currentQty + qtyChange;
+  async calculateNewMa(
+    itemId: string,
+    warehouseId: string,
+    qty: number,
+    value: number,
+    isIncrease: boolean,
+    _tx?: unknown,
+  ): Promise<MaCalculationResult> {
+    const key = `${itemId}:${warehouseId}`;
+    const balance = this.stockBalances.get(key) ?? { itemId, warehouseId, qty: 0, ma: 0 };
 
-    const maAfter = newQty > 0
-      ? Math.round(((totalValueBefore + incomingValue) / newQty) * 100) / 100
-      : 0;
+    const currentQty = balance.qty;
+    const currentMa = balance.ma;
+    const totalValueBefore = currentQty * currentMa;
+
+    let maAfter: number;
+    let stockAfter: number;
+
+    if (isIncrease) {
+      stockAfter = currentQty + qty;
+      maAfter = stockAfter > 0
+        ? Math.round(((totalValueBefore + value) / stockAfter) * 100) / 100
+        : 0;
+    } else {
+      maAfter = currentMa; // MA unchanged on stock-out
+      stockAfter = currentQty - qty;
+    }
+
+    // Update internal state
+    this.stockBalances.set(key, { itemId, warehouseId, qty: stockAfter, ma: maAfter });
 
     return {
       maBefore: currentMa,
       maAfter,
       stockBefore: currentQty,
-      stockAfter: newQty,
-      totalValueAfter: Math.round(newQty * maAfter * 100) / 100,
-    };
-  }
-
-  /**
-   * Calculate stock-out impact (uses current MA, no recalculation).
-   */
-  calculateStockOut(currentQty: number, currentMa: number, outQty: number): MaCalculationResult {
-    const newQty = currentQty - outQty;
-    return {
-      maBefore: currentMa,
-      maAfter: currentMa, // MA unchanged on stock-out
-      stockBefore: currentQty,
-      stockAfter: newQty,
-      totalValueAfter: Math.round(newQty * currentMa * 100) / 100,
+      stockAfter,
     };
   }
 

@@ -1,30 +1,20 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@autoflow/shared-prisma';
+import { ApArStatus } from '@prisma/client';
 import { ReportFilterDto } from './dto/report-filter.dto';
 import {
   StockBalanceView,
   StockBalanceResponse,
-  PaginationMeta,
 } from './dto/stock-balance.dto';
 import { APAgingView, APAgingResponse } from './dto/ap-aging.dto';
 import { ARAgingView, ARAgingResponse } from './dto/ar-aging.dto';
 import { DashboardResponse, RecentAlert } from './dto/dashboard.dto';
-import {
-  MOCK_STOCK_BALANCES,
-  MOCK_ITEMS,
-  MOCK_WAREHOUSES,
-  MOCK_OPEN_AP_ITEMS,
-  MOCK_OPEN_AR_ITEMS,
-  MOCK_VENDORS,
-  MOCK_CUSTOMERS,
-} from '../mocks/mock-data';
 
 /**
  * Service responsible for generating stock balance, AP/AR aging reports,
  * and dashboard summary metrics.
  *
- * Uses PrismaService for alert_log queries and mock data for stock/AP/AR
- * until cross-schema queries are implemented with real data.
+ * Uses real Prisma queries against PostgreSQL for all data.
  */
 @Injectable()
 export class ReportQueryService {
@@ -34,49 +24,59 @@ export class ReportQueryService {
 
   /**
    * Get stock balance report with pagination and filters.
-   * Currently uses mock data — will be replaced with cross-schema queries.
    */
   async getStockReport(filter: ReportFilterDto): Promise<StockBalanceResponse> {
     const page = filter.page ?? 1;
     const limit = filter.limit ?? 20;
-
-    let balances = MOCK_STOCK_BALANCES.map((sb) => {
-      const item = MOCK_ITEMS.find((i) => i.id === sb.itemId);
-      const warehouse = MOCK_WAREHOUSES.find((w) => w.id === sb.warehouseId);
-      return {
-        itemId: sb.itemId,
-        itemName: item?.name ?? 'Unknown',
-        warehouseId: sb.warehouseId,
-        warehouseName: warehouse?.name ?? 'Unknown',
-        currentQty: sb.currentQty,
-        currentMA: sb.currentMA,
-        totalValue: sb.currentQty * sb.currentMA,
-      } as StockBalanceView;
-    });
-
-    // Apply filters
-    if (filter.itemId) {
-      balances = balances.filter((b) => b.itemId === filter.itemId);
-    }
-    if (filter.warehouseId) {
-      balances = balances.filter((b) => b.warehouseId === filter.warehouseId);
-    }
-    if (filter.search) {
-      const keyword = filter.search.toLowerCase();
-      balances = balances.filter(
-        (b) =>
-          b.itemName.toLowerCase().includes(keyword) ||
-          b.warehouseName.toLowerCase().includes(keyword),
-      );
-    }
-
-    const total = balances.length;
-    const totalValue = balances.reduce((sum, b) => sum + b.totalValue, 0);
-    const totalItems = new Set(balances.map((b) => b.itemId)).size;
-
-    // Apply pagination
     const skip = (page - 1) * limit;
-    const data = balances.slice(skip, skip + limit);
+
+    // Build where clause
+    const where: any = {};
+    if (filter.itemId) where.itemId = filter.itemId;
+    if (filter.warehouseId) where.warehouseId = filter.warehouseId;
+
+    // If search keyword, filter by item name or warehouse name
+    if (filter.search) {
+      where.OR = [
+        { item: { name: { contains: filter.search, mode: 'insensitive' } } },
+        { warehouse: { name: { contains: filter.search, mode: 'insensitive' } } },
+      ];
+    }
+
+    const [balances, total] = await Promise.all([
+      this.prisma.stockBalance.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          item: { select: { id: true, name: true } },
+          warehouse: { select: { id: true, name: true } },
+        },
+        orderBy: { updatedAt: 'desc' },
+      }),
+      this.prisma.stockBalance.count({ where }),
+    ]);
+
+    const data: StockBalanceView[] = balances.map((sb) => ({
+      itemId: sb.itemId,
+      itemName: sb.item?.name ?? 'Unknown',
+      warehouseId: sb.warehouseId,
+      warehouseName: sb.warehouse?.name ?? 'Unknown',
+      currentQty: Number(sb.qty),
+      currentMA: Number(sb.ma),
+      totalValue: Number(sb.qty) * Number(sb.ma),
+    }));
+
+    // Compute summary from all matching records (not just current page)
+    const allBalances = await this.prisma.stockBalance.findMany({
+      where,
+      select: { itemId: true, qty: true, ma: true },
+    });
+    const totalValue = allBalances.reduce(
+      (sum, b) => sum + Number(b.qty) * Number(b.ma),
+      0,
+    );
+    const totalItems = new Set(allBalances.map((b) => b.itemId)).size;
 
     return {
       data,
@@ -96,30 +96,32 @@ export class ReportQueryService {
   async getStockDetail(
     itemId: string,
   ): Promise<{ item: { id: string; name: string }; warehouses: StockBalanceView[] }> {
-    const item = MOCK_ITEMS.find((i) => i.id === itemId);
+    const item = await this.prisma.item.findUnique({
+      where: { id: itemId },
+      select: { id: true, name: true },
+    });
     if (!item) {
       throw new NotFoundException('Item not found');
     }
 
-    const warehouses = MOCK_STOCK_BALANCES.filter(
-      (sb) => sb.itemId === itemId,
-    ).map((sb) => {
-      const warehouse = MOCK_WAREHOUSES.find((w) => w.id === sb.warehouseId);
-      return {
-        itemId: sb.itemId,
-        itemName: item.name,
-        warehouseId: sb.warehouseId,
-        warehouseName: warehouse?.name ?? 'Unknown',
-        currentQty: sb.currentQty,
-        currentMA: sb.currentMA,
-        totalValue: sb.currentQty * sb.currentMA,
-      } as StockBalanceView;
+    const balances = await this.prisma.stockBalance.findMany({
+      where: { itemId },
+      include: {
+        warehouse: { select: { id: true, name: true } },
+      },
     });
 
-    return {
-      item: { id: item.id, name: item.name },
-      warehouses,
-    };
+    const warehouses: StockBalanceView[] = balances.map((sb) => ({
+      itemId: sb.itemId,
+      itemName: item.name,
+      warehouseId: sb.warehouseId,
+      warehouseName: sb.warehouse?.name ?? 'Unknown',
+      currentQty: Number(sb.qty),
+      currentMA: Number(sb.ma),
+      totalValue: Number(sb.qty) * Number(sb.ma),
+    }));
+
+    return { item, warehouses };
   }
 
   /**
@@ -131,21 +133,40 @@ export class ReportQueryService {
     const limit = filter.limit ?? 20;
     const asOfDate = filter.asOfDate ? new Date(filter.asOfDate) : new Date();
 
-    let items = MOCK_OPEN_AP_ITEMS;
-    if (filter.vendorId) {
-      items = items.filter((i) => i.vendorId === filter.vendorId);
-    }
+    // Query open AP items from database
+    const apWhere: any = {
+      status: { in: [ApArStatus.OPEN, ApArStatus.PARTIAL] },
+    };
+    if (filter.vendorId) apWhere.vendorId = filter.vendorId;
+
+    const apItems = await this.prisma.aPOpenItem.findMany({
+      where: apWhere,
+      select: {
+        id: true,
+        vendorId: true,
+        remainingAmount: true,
+        createdAt: true,
+      },
+    });
+
+    // Get vendor names
+    const vendorIds = [...new Set(apItems.map((i) => i.vendorId))];
+    const vendors = await this.prisma.vendor.findMany({
+      where: { id: { in: vendorIds } },
+      select: { id: true, name: true },
+    });
+    const vendorMap = new Map(vendors.map((v) => [v.id, v.name]));
 
     // Group by vendor and compute aging buckets
-    const vendorMap = new Map<string, APAgingView>();
-    for (const item of items) {
-      const daysDiff = this.computeDaysDiff(new Date(item.createdAt), asOfDate);
-      const vendor = MOCK_VENDORS.find((v) => v.id === item.vendorId);
+    const vendorAgingMap = new Map<string, APAgingView>();
+    for (const item of apItems) {
+      const daysDiff = this.computeDaysDiff(item.createdAt, asOfDate);
+      const amount = Number(item.remainingAmount);
 
-      if (!vendorMap.has(item.vendorId)) {
-        vendorMap.set(item.vendorId, {
+      if (!vendorAgingMap.has(item.vendorId)) {
+        vendorAgingMap.set(item.vendorId, {
           vendorId: item.vendorId,
-          vendorName: vendor?.name ?? 'Unknown',
+          vendorName: vendorMap.get(item.vendorId) ?? 'Unknown',
           totalOpen: 0,
           current: 0,
           days31_60: 0,
@@ -154,12 +175,12 @@ export class ReportQueryService {
         });
       }
 
-      const entry = vendorMap.get(item.vendorId)!;
-      entry.totalOpen += item.amount;
-      this.assignAgingBucket(entry, item.amount, daysDiff);
+      const entry = vendorAgingMap.get(item.vendorId)!;
+      entry.totalOpen += amount;
+      this.assignAgingBucket(entry, amount, daysDiff);
     }
 
-    const allData = Array.from(vendorMap.values());
+    const allData = Array.from(vendorAgingMap.values());
     const total = allData.length;
     const totalOpen = allData.reduce((sum, v) => sum + v.totalOpen, 0);
 
@@ -187,33 +208,40 @@ export class ReportQueryService {
     const limit = filter.limit ?? 20;
     const asOfDate = filter.asOfDate ? new Date(filter.asOfDate) : new Date();
 
-    let items = MOCK_OPEN_AR_ITEMS;
-    if (filter.customerId) {
-      items = items.filter((i) => i.customerId === filter.customerId);
-    }
+    // Query open AR items from database
+    const arWhere: any = {
+      status: { in: [ApArStatus.OPEN, ApArStatus.PARTIAL] },
+    };
+    if (filter.customerId) arWhere.customerId = filter.customerId;
+
+    const arItems = await this.prisma.aROpenItem.findMany({
+      where: arWhere,
+      select: {
+        id: true,
+        customerId: true,
+        remainingAmount: true,
+        createdAt: true,
+      },
+    });
+
+    // Get customer names
+    const customerIds = [...new Set(arItems.map((i) => i.customerId))];
+    const customers = await this.prisma.customer.findMany({
+      where: { id: { in: customerIds } },
+      select: { id: true, name: true },
+    });
+    const customerMap = new Map(customers.map((c) => [c.id, c.name]));
 
     // Group by customer and compute aging buckets
-    const customerMap = new Map<
-      string,
-      {
-        customerId: string;
-        customerName: string;
-        totalOpen: number;
-        current: number;
-        days31_60: number;
-        days61_90: number;
-        over90: number;
-      }
-    >();
+    const customerAgingMap = new Map<string, ARAgingView>();
+    for (const item of arItems) {
+      const daysDiff = this.computeDaysDiff(item.createdAt, asOfDate);
+      const amount = Number(item.remainingAmount);
 
-    for (const item of items) {
-      const daysDiff = this.computeDaysDiff(new Date(item.createdAt), asOfDate);
-      const customer = MOCK_CUSTOMERS.find((c) => c.id === item.customerId);
-
-      if (!customerMap.has(item.customerId)) {
-        customerMap.set(item.customerId, {
+      if (!customerAgingMap.has(item.customerId)) {
+        customerAgingMap.set(item.customerId, {
           customerId: item.customerId,
-          customerName: customer?.name ?? 'Unknown',
+          customerName: customerMap.get(item.customerId) ?? 'Unknown',
           totalOpen: 0,
           current: 0,
           days31_60: 0,
@@ -222,12 +250,12 @@ export class ReportQueryService {
         });
       }
 
-      const entry = customerMap.get(item.customerId)!;
-      entry.totalOpen += item.amount;
-      this.assignAgingBucket(entry, item.amount, daysDiff);
+      const entry = customerAgingMap.get(item.customerId)!;
+      entry.totalOpen += amount;
+      this.assignAgingBucket(entry, amount, daysDiff);
     }
 
-    const allData = Array.from(customerMap.values());
+    const allData = Array.from(customerAgingMap.values());
     const total = allData.length;
     const totalOpen = allData.reduce((sum, c) => sum + c.totalOpen, 0);
 
@@ -249,13 +277,6 @@ export class ReportQueryService {
   /**
    * Get dashboard summary metrics.
    * Computes all metrics fresh from current data (no caching).
-   *
-   * - totalAlerts: count of all alert_log entries
-   * - alertsByCode: groupBy alertCode with count
-   * - stockValue: sum of all MOCK_STOCK_BALANCES (qty * MA)
-   * - totalAP: sum of all MOCK_OPEN_AP_ITEMS amounts
-   * - totalAR: sum of all MOCK_OPEN_AR_ITEMS amounts
-   * - recentAlerts: latest 5 alert_log entries
    */
   async getDashboard(): Promise<DashboardResponse> {
     // Query alert metrics from database
@@ -277,21 +298,32 @@ export class ReportQueryService {
       alertsByCode[group.alertCode] = group._count.alertCode;
     }
 
-    // Compute stock value from mock data (sum of qty * MA)
-    const stockValue = MOCK_STOCK_BALANCES.reduce(
-      (sum, sb) => sum + sb.currentQty * sb.currentMA,
+    // Compute stock value from real stock_balance table
+    const stockBalances = await this.prisma.stockBalance.findMany({
+      select: { qty: true, ma: true },
+    });
+    const stockValue = stockBalances.reduce(
+      (sum, sb) => sum + Number(sb.qty) * Number(sb.ma),
       0,
     );
 
-    // Compute total AP from mock data
-    const totalAP = MOCK_OPEN_AP_ITEMS.reduce(
-      (sum, item) => sum + item.amount,
+    // Compute total AP from real ap_open_item table
+    const apItems = await this.prisma.aPOpenItem.findMany({
+      where: { status: { in: [ApArStatus.OPEN, ApArStatus.PARTIAL] } },
+      select: { remainingAmount: true },
+    });
+    const totalAP = apItems.reduce(
+      (sum, item) => sum + Number(item.remainingAmount),
       0,
     );
 
-    // Compute total AR from mock data
-    const totalAR = MOCK_OPEN_AR_ITEMS.reduce(
-      (sum, item) => sum + item.amount,
+    // Compute total AR from real ar_open_item table
+    const arItems = await this.prisma.aROpenItem.findMany({
+      where: { status: { in: [ApArStatus.OPEN, ApArStatus.PARTIAL] } },
+      select: { remainingAmount: true },
+    });
+    const totalAR = arItems.reduce(
+      (sum, item) => sum + Number(item.remainingAmount),
       0,
     );
 

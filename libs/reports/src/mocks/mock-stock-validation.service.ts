@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IStockValidationService, StockValidationResult } from '@autoflow/shared-types';
+import { IStockValidationService } from '@autoflow/shared-types';
 import { MOCK_STOCK_BALANCES } from './mock-data';
 
 /**
@@ -9,26 +9,22 @@ import { MOCK_STOCK_BALANCES } from './mock-data';
  */
 @Injectable()
 export class MockStockValidationService implements IStockValidationService {
-  async validateStockAvailability(
+  async validateStockAvailable(
     itemId: string,
     warehouseId: string,
-    requiredQty: number,
-  ): Promise<StockValidationResult> {
+    qty: number,
+  ): Promise<void> {
     const balance = MOCK_STOCK_BALANCES.find(
       (b) => b.itemId === itemId && b.warehouseId === warehouseId,
     );
 
     const availableQty = balance?.currentQty ?? 0;
-    const valid = availableQty >= requiredQty;
 
-    return {
-      valid,
-      availableQty,
-      requestedQty: requiredQty,
-      errorMessage: valid
-        ? undefined
-        : `สต็อกไม่เพียงพอ: มี ${availableQty} ต้องการ ${requiredQty}`,
-    };
+    if (availableQty < qty) {
+      throw new Error(
+        `สต็อกไม่เพียงพอ: มี ${availableQty} ต้องการ ${qty}`,
+      );
+    }
   }
 
   async getStockBalance(itemId: string, warehouseId: string): Promise<number> {
@@ -36,10 +32,5 @@ export class MockStockValidationService implements IStockValidationService {
       (b) => b.itemId === itemId && b.warehouseId === warehouseId,
     );
     return balance?.currentQty ?? 0;
-  }
-
-  async isStockFrozen(_warehouseId: string): Promise<boolean> {
-    // Mock: stock is never frozen
-    return false;
   }
 }

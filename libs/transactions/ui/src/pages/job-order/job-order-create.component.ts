@@ -33,18 +33,21 @@ import { CreateJobOrderRequest, JobOrderItem } from '../../models';
     <form #joForm="ngForm" (ngSubmit)="onSubmit(joForm.valid)" novalidate>
       <!-- Customer -->
       <div class="form-group">
-        <label for="customerId">Customer ID *</label>
-        <input
+        <label for="customerId">ลูกค้า *</label>
+        <select
           id="customerId"
-          type="text"
           [(ngModel)]="formData.customerId"
           name="customerId"
           required
-          placeholder="Enter customer UUID"
           #customerIdField="ngModel"
-        />
+        >
+          <option value="">-- เลือกลูกค้า --</option>
+          @for (customer of state.activeCustomers(); track customer.id) {
+            <option [value]="customer.id">{{ customer.code }} - {{ customer.name }}</option>
+          }
+        </select>
         @if (customerIdField.invalid && customerIdField.touched) {
-          <span class="field-error">Customer ID is required</span>
+          <span class="field-error">กรุณาเลือกลูกค้า</span>
         }
       </div>
 
@@ -70,15 +73,18 @@ import { CreateJobOrderRequest, JobOrderItem } from '../../models';
         @for (item of items; track $index; let i = $index) {
           <div class="item-row">
             <div class="form-group">
-              <label [for]="'itemId_' + i">Item ID *</label>
-              <input
+              <label [for]="'itemId_' + i">สินค้า *</label>
+              <select
                 [id]="'itemId_' + i"
-                type="text"
                 [(ngModel)]="item.itemId"
                 [name]="'itemId_' + i"
                 required
-                placeholder="Item UUID"
-              />
+              >
+                <option value="">-- เลือกสินค้า --</option>
+                @for (it of state.activeItems(); track it.id) {
+                  <option [value]="it.id">{{ it.code }} - {{ it.name }}</option>
+                }
+              </select>
             </div>
             <div class="form-group">
               <label [for]="'qty_' + i">Qty *</label>
@@ -163,6 +169,10 @@ import { CreateJobOrderRequest, JobOrderItem } from '../../models';
 export class JobOrderCreateComponent {
   readonly state = inject(TransactionsStateService);
   private readonly router = inject(Router);
+
+  constructor() {
+    this.state.loadMasterData();
+  }
 
   formData = {
     customerId: '',

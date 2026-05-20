@@ -24,6 +24,14 @@ export type {
   RefChainViolation,
 } from './interfaces/ref-chain-service.interface';
 
+export type {
+  IMasterDataLookupService,
+  Item,
+  Vendor,
+  Customer,
+  Warehouse,
+} from './interfaces/master-data-lookup-service.interface';
+
 // DTOs
 export type { CreateTxDto } from './dto/create-tx.dto';
 export type { MaResult } from './dto/ma-result.dto';

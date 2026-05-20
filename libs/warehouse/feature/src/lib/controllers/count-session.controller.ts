@@ -26,13 +26,13 @@ import { CountSessionQueryDto } from '../dto/count-session-query.dto';
 
 @ApiTags('warehouse / stock-count')
 @ApiBearerAuth()
-@Controller('api/v1/warehouse/count-sessions')
+@Controller('warehouse/count-sessions')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CountSessionController {
   constructor(private readonly stockCountService: StockCountService) {}
 
   @Post()
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'Create a new stock count session — freeze items in warehouse' })
   @ApiResponse({
     status: 201,
@@ -50,7 +50,7 @@ export class CountSessionController {
   }
 
   @Get()
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'List count sessions with filters and pagination' })
   @ApiResponse({
     status: 200,
@@ -76,7 +76,7 @@ export class CountSessionController {
   }
 
   @Get(':id')
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.STORE)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.STORE, Role.ADMIN)
   @ApiOperation({ summary: 'Get count session detail with lines' })
   @ApiParam({ name: 'id', description: 'Count session ID', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Count session detail with lines' })
@@ -88,7 +88,7 @@ export class CountSessionController {
   }
 
   @Patch(':id/lines/:lineId')
-  @Roles(Role.STORE, Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.STORE, Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'Record physical count result for a line' })
   @ApiParam({ name: 'id', description: 'Count session ID', format: 'uuid' })
   @ApiParam({ name: 'lineId', description: 'Count line ID', format: 'uuid' })
@@ -108,7 +108,7 @@ export class CountSessionController {
 
   @Post(':id/submit')
   @HttpCode(HttpStatus.OK)
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'Submit count session for approval' })
   @ApiParam({ name: 'id', description: 'Count session ID', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Session submitted — status changed to PENDING_APPROVAL' })
@@ -122,7 +122,7 @@ export class CountSessionController {
 
   @Post(':id/approve')
   @HttpCode(HttpStatus.OK)
-  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO)
+  @Roles(Role.SUPERVISOR, Role.MANAGER, Role.CFO, Role.ADMIN)
   @ApiOperation({ summary: 'Approve count session — POST adjustments and unfreeze' })
   @ApiParam({ name: 'id', description: 'Count session ID', format: 'uuid' })
   @ApiResponse({

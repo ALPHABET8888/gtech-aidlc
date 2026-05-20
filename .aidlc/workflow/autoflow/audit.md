@@ -168,3 +168,10 @@
 **Unit**: reports
 **Artifacts**: .kiro/specs/autoflow-reports/design.md
 **Outcome**: Compact design — 5 components, 2 entities (1 table + 2 views), 7 endpoints, 5 PBT properties. Single design.md file (≤10 stories).
+
+### [2026-05-20T10:00:00Z] Solutions Review: autoflow
+
+**Phase**: solutions-review
+**Action**: Cross-unit design review (3 units: master-data, transactions, warehouse)
+**Artifacts**: .aidlc/workflow/autoflow/architecture-review.md
+**Outcome**: Partially Aligned — 2 critical, 4 major, 3 minor. Go/No-Go: Conditional Go — resolve CR-1 (pagination format mismatch) and CR-2 (DI token naming conflict) before proceeding.

@@ -38,6 +38,11 @@ export interface IPeriodService {
   validatePeriodOpen(period: string): Promise<void>;
 
   /**
+   * Get current period in YYYY-MM format.
+   */
+  getCurrentPeriod(): string;
+
+  /**
    * List all periods.
    */
   getAll(): Promise<unknown[]>;

@@ -116,4 +116,9 @@ export class MockTxLogService implements ITxLogService {
     const entry = this.sampleEntries[0];
     return { ...entry, txId, status: status as TxStatus };
   }
+
+  async postTx(txId: string, userId: string): Promise<TxLogEntry> {
+    const entry = this.sampleEntries[0];
+    return { ...entry, txId, status: TxStatus.POSTED, postedBy: userId };
+  }
 }

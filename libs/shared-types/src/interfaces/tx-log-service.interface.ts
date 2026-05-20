@@ -38,21 +38,32 @@ export interface ITxLogService {
    * Create and POST a new transaction through the full validation pipeline.
    * Pipeline: Period check → Stock check → RefChain check → MA calculation → POST
    */
-  createTx(dto: unknown, userId: string): Promise<unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createTx(dto: any, userId?: string): Promise<any>;
 
   /**
    * Retrieve a TX by ID.
    */
-  findById(txId: string): Promise<unknown | null>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  findById(txId: string): Promise<any | null>;
 
   /**
    * Retrieve TX entries with filters and pagination.
    */
-  findMany?(filters: unknown, pagination?: unknown): Promise<unknown[]>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  findMany?(filters: any, pagination?: any): Promise<any[]>;
 
   /**
    * Update TX status (DRAFT→POSTED or POSTED→VOIDED).
    * Enforces immutability — rejects invalid transitions.
    */
-  updateStatus?(txId: string, status: string): Promise<unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateStatus?(txId: string, status: string): Promise<any>;
+
+  /**
+   * Post a transaction (transition DRAFT→POSTED).
+   * Used by downstream units after createTx.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  postTx(txId: string, userId: string): Promise<any>;
 }

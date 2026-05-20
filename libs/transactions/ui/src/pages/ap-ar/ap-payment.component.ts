@@ -146,6 +146,10 @@ export class ApPaymentComponent {
   readonly state = inject(TransactionsStateService);
   private readonly router = inject(Router);
 
+  constructor() {
+    this.state.loadMasterData();
+  }
+
   vendorId = '';
   paymentMethod: PaymentMethod | '' = '';
   paymentRef = '';

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
   IMaCalculationService,
-  MaCalculationInput,
   MaCalculationResult,
 } from '@autoflow/shared-types';
 
@@ -52,29 +51,36 @@ export class MockMaCalculationService implements IMaCalculationService {
     this.defaultStock = stock;
   }
 
-  calculateMa(input: MaCalculationInput): MaCalculationResult {
-    const { currentQty, currentMa, qtyChange, unitCost } = input;
-    const totalValueBefore = currentQty * currentMa;
-    const incomingValue = qtyChange * unitCost;
-    const newQty = currentQty + qtyChange;
-    const newMa = newQty > 0 ? (totalValueBefore + incomingValue) / newQty : currentMa;
+  async calculateNewMa(
+    itemId: string,
+    warehouseId: string,
+    qty: number,
+    value: number,
+    isIncrease: boolean,
+    _tx?: unknown,
+  ): Promise<MaCalculationResult> {
+    const key = `${itemId}:${warehouseId}`;
+    const currentMa = this.maValues.get(key) ?? this.defaultMa;
+    const currentStock = this.stockValues.get(key) ?? this.defaultStock;
+    const totalValueBefore = currentStock * currentMa;
+
+    let maAfter: number;
+    let stockAfter: number;
+
+    if (isIncrease) {
+      stockAfter = currentStock + qty;
+      maAfter = stockAfter > 0 ? (totalValueBefore + value) / stockAfter : currentMa;
+      maAfter = Math.round(maAfter * 100) / 100;
+    } else {
+      maAfter = currentMa;
+      stockAfter = currentStock - qty;
+    }
 
     return {
       maBefore: currentMa,
-      maAfter: Math.round(newMa * 100) / 100,
-      stockBefore: currentQty,
-      stockAfter: newQty,
-      totalValueAfter: Math.round(newQty * newMa * 100) / 100,
-    };
-  }
-
-  calculateStockOut(currentQty: number, currentMa: number, outQty: number): MaCalculationResult {
-    return {
-      maBefore: currentMa,
-      maAfter: currentMa, // MA doesn't change on stock-out
-      stockBefore: currentQty,
-      stockAfter: currentQty - outQty,
-      totalValueAfter: Math.round((currentQty - outQty) * currentMa * 100) / 100,
+      maAfter,
+      stockBefore: currentStock,
+      stockAfter,
     };
   }
 

@@ -24,12 +24,11 @@ export class MockPeriodService implements IPeriodService {
    * Validate that a period is open for posting.
    * @throws PeriodLockedException if period is closed
    */
-  async validatePeriodOpen(period: string): Promise<boolean> {
+  async validatePeriodOpen(period: string): Promise<void> {
     const info = this.closedPeriods.get(period);
     if (info && info.status === PeriodStatus.CLOSED) {
       throw new PeriodLockedException(period);
     }
-    return true;
   }
 
   /**
@@ -42,18 +41,30 @@ export class MockPeriodService implements IPeriodService {
     return `${year}-${month}`;
   }
 
-  /**
-   * Close a period — prevents any future postings.
-   */
-  async closePeriod(period: string, closedBy: string): Promise<PeriodInfo> {
+  async getAll(): Promise<PeriodInfo[]> {
+    return Array.from(this.closedPeriods.values());
+  }
+
+  async create(period: string, _openedBy: string): Promise<PeriodInfo> {
+    return { period, status: PeriodStatus.OPEN, closedAt: null, closedBy: null };
+  }
+
+  async close(id: string, closedBy: string): Promise<PeriodInfo> {
     const info: PeriodInfo = {
-      period,
+      period: id,
       status: PeriodStatus.CLOSED,
       closedAt: new Date().toISOString(),
       closedBy,
     };
-    this.closedPeriods.set(period, info);
+    this.closedPeriods.set(id, info);
     return info;
+  }
+
+  /**
+   * Close a period — prevents any future postings.
+   */
+  async closePeriod(period: string, closedBy: string): Promise<PeriodInfo> {
+    return this.close(period, closedBy);
   }
 
   /**
@@ -64,13 +75,7 @@ export class MockPeriodService implements IPeriodService {
     if (closed) {
       return closed;
     }
-    // Default: period is OPEN
-    return {
-      period,
-      status: PeriodStatus.OPEN,
-      closedAt: null,
-      closedBy: null,
-    };
+    return { period, status: PeriodStatus.OPEN, closedAt: null, closedBy: null };
   }
 
   /**

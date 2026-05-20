@@ -63,7 +63,7 @@ export class WriteOffService {
    */
   async requestWriteOff(dto: CreateWriteOffDto, requestedBy: string) {
     // Validate stock is sufficient
-    await this.stockValidationService.validateStockAvailability(
+    await this.stockValidationService.validateStockAvailable(
       dto.itemId,
       dto.warehouseId,
       dto.qty,
@@ -176,7 +176,7 @@ export class WriteOffService {
 
     // Validate stock won't go negative
     const qty = Number(writeOff.qty);
-    await this.stockValidationService.validateStockAvailability(
+    await this.stockValidationService.validateStockAvailable(
       writeOff.itemId,
       writeOff.warehouseId,
       qty,

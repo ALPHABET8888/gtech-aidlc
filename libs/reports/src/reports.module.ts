@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
+import { PrismaModule } from '@autoflow/shared-prisma';
 import {
-  MockTxLogService,
-  MockStockValidationService,
-  MockPeriodService,
+  MasterDataModule,
+  StockValidationService,
+  PeriodService,
+} from '@autoflow/master-data-feature';
+import { ReportsTxLogAdapter } from './adapters/reports-tx-log.adapter';
+import {
   TX_LOG_SERVICE,
   STOCK_VALIDATION_SERVICE,
   PERIOD_SERVICE,
-} from './mocks';
+} from './di-tokens';
 import { AlertRuleService } from './alerts/alert-rule.service';
 import { AlertLogService } from './alerts/alert-log.service';
 import { AlertsController } from './alerts/alerts.controller';
@@ -15,21 +19,22 @@ import { ReportQueryService } from './reports/report-query.service';
 import { ReportsController } from './reports/reports.controller';
 
 @Module({
-  imports: [],
+  imports: [PrismaModule, MasterDataModule],
   controllers: [AlertsController, ReportsController],
   providers: [
     {
       provide: TX_LOG_SERVICE,
-      useClass: MockTxLogService,
+      useClass: ReportsTxLogAdapter,
     },
     {
       provide: STOCK_VALIDATION_SERVICE,
-      useClass: MockStockValidationService,
+      useExisting: StockValidationService,
     },
     {
       provide: PERIOD_SERVICE,
-      useClass: MockPeriodService,
+      useExisting: PeriodService,
     },
+    ReportsTxLogAdapter,
     AlertRuleService,
     AlertLogService,
     AlertValidationGuard,

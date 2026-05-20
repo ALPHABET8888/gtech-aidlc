@@ -5,7 +5,7 @@ import {
   TX_LOG_SERVICE,
   STOCK_VALIDATION_SERVICE,
   PERIOD_SERVICE,
-} from '../mocks';
+} from '../di-tokens';
 import { AlertError, AlertValidationResult } from './dto/alert-validation-result.dto';
 
 /**
@@ -99,26 +99,29 @@ export class AlertRuleService {
       return null;
     }
 
-    const result = await this.stockValidationService.validateStockAvailability(
-      dto.itemId,
-      dto.warehouseId,
-      requiredQty,
-    );
-
-    if (!result.valid) {
+    try {
+      await this.stockValidationService.validateStockAvailable(
+        dto.itemId,
+        dto.warehouseId,
+        requiredQty,
+      );
+      return null;
+    } catch {
+      const availableQty = await this.stockValidationService.getStockBalance(
+        dto.itemId,
+        dto.warehouseId,
+      );
       return {
         code: 'STOCK_NEGATIVE',
         message: 'สต็อกไม่เพียงพอ',
         details: {
           itemId: dto.itemId,
           warehouseId: dto.warehouseId,
-          available: result.availableQty,
+          available: availableQty,
           requested: requiredQty,
         },
       };
     }
-
-    return null;
   }
 
   /**
@@ -220,9 +223,10 @@ export class AlertRuleService {
    * Check if the period status is CLOSED.
    */
   private async checkPeriodLocked(dto: CreateTxDto): Promise<AlertError | null> {
-    const isOpen = await this.periodService.validatePeriodOpen(dto.period);
-
-    if (!isOpen) {
+    try {
+      await this.periodService.validatePeriodOpen(dto.period);
+      return null;
+    } catch {
       return {
         code: 'PERIOD_LOCKED',
         message: 'งวดบัญชีถูกปิดแล้ว',
@@ -232,7 +236,5 @@ export class AlertRuleService {
         },
       };
     }
-
-    return null;
   }
 }

@@ -194,7 +194,8 @@ export class StockCountService {
     });
 
     // Get current period for TX entries
-    const currentPeriod = this.periodService.getCurrentPeriod();
+    const now2 = new Date();
+    const currentPeriod = `${now2.getFullYear()}-${String(now2.getMonth() + 1).padStart(2, '0')}`;
 
     // Process each line with difference != 0
     const lines = await this.countSessionRepository.findLinesBySessionId(sessionId);
@@ -209,13 +210,6 @@ export class StockCountService {
 
         if (difference > 0) {
           // ADJ_COUNT_UP: physical > system — stock increase, recalculate MA
-          const maResult = this.maService.calculateMa({
-            currentQty: systemQty,
-            currentMa: systemMa,
-            qtyChange: difference,
-            unitCost: systemMa, // Use current MA as unit cost for count-up
-          });
-
           const txEntry = await this.txLogService.createTx({
             txType: TxType.ADJ_COUNT_UP,
             txDate: now.toISOString(),
@@ -225,33 +219,24 @@ export class StockCountService {
             qty: difference,
             unitCost: systemMa,
             totalCost: difference * systemMa,
-            cogsUnit: null,
-            vendorId: null,
-            customerId: null,
-            apAmount: 0,
-            arAmount: 0,
-            parentTxId: null,
-            createdBy: userId,
-            postedBy: userId,
-          });
+          }, userId) as { txId?: string; id?: string };
 
-          // Post the TX
-          await this.txLogService.postTx(txEntry.txId, userId);
+          const txId = txEntry.txId ?? txEntry.id ?? '';
 
           // Set tx_id on the line
-          await this.countSessionRepository.updateLine(line.id, { txId: txEntry.txId });
+          await this.countSessionRepository.updateLine(line.id, { txId });
 
           adjustments.push({
             lineId: line.id,
             txType: TxType.ADJ_COUNT_UP,
-            txId: txEntry.txId,
+            txId,
           });
         } else {
           // ADJ_COUNT_DOWN: physical < system — stock decrease, validate stock >= 0, MA unchanged
           const decreaseQty = Math.abs(difference);
 
           // Validate stock won't go negative
-          await this.stockValidationService.validateStockAvailability(
+          await this.stockValidationService.validateStockAvailable(
             line.itemId,
             session.warehouseId,
             decreaseQty,
@@ -266,26 +251,17 @@ export class StockCountService {
             qty: -decreaseQty,
             unitCost: systemMa,
             totalCost: -(decreaseQty * systemMa),
-            cogsUnit: null,
-            vendorId: null,
-            customerId: null,
-            apAmount: 0,
-            arAmount: 0,
-            parentTxId: null,
-            createdBy: userId,
-            postedBy: userId,
-          });
+          }, userId) as { txId?: string; id?: string };
 
-          // Post the TX
-          await this.txLogService.postTx(txEntry.txId, userId);
+          const txId = txEntry.txId ?? txEntry.id ?? '';
 
           // Set tx_id on the line
-          await this.countSessionRepository.updateLine(line.id, { txId: txEntry.txId });
+          await this.countSessionRepository.updateLine(line.id, { txId });
 
           adjustments.push({
             lineId: line.id,
             txType: TxType.ADJ_COUNT_DOWN,
-            txId: txEntry.txId,
+            txId,
           });
         }
       }

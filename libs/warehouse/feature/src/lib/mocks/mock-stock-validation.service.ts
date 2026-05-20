@@ -64,23 +64,23 @@ export class MockStockValidationService implements IStockValidationService {
    * Validate that sufficient stock exists for a stock-out operation.
    * @throws StockNegativeException if stock would go negative
    */
-  async validateStockAvailability(
+  async validateStockAvailable(
     itemId: string,
     warehouseId: string,
-    requiredQty: number,
-  ): Promise<StockValidationResult> {
+    qty: number,
+  ): Promise<void> {
     const key = `${itemId}:${warehouseId}`;
-    const availableQty = this.stockMap.get(key) ?? 0;
 
-    if (availableQty < requiredQty) {
-      throw new StockNegativeException(itemId, warehouseId, availableQty, requiredQty);
+    // Check frozen first
+    if (this.frozenItems.has(key)) {
+      throw new StockFrozenException(itemId, warehouseId);
     }
 
-    return {
-      valid: true,
-      availableQty,
-      requestedQty: requiredQty,
-    };
+    const availableQty = this.stockMap.get(key) ?? 0;
+
+    if (availableQty < qty) {
+      throw new StockNegativeException(itemId, warehouseId, availableQty, qty);
+    }
   }
 
   /**

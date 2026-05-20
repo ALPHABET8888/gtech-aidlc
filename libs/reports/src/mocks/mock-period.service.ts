@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IPeriodService, PeriodInfo, PeriodStatus } from '@autoflow/shared-types';
+import { IPeriodService, PeriodStatus } from '@autoflow/shared-types';
 import { MOCK_PERIODS } from './mock-data';
 
 /**
@@ -9,15 +9,17 @@ import { MOCK_PERIODS } from './mock-data';
  */
 @Injectable()
 export class MockPeriodService implements IPeriodService {
-  async validatePeriodOpen(period: string): Promise<boolean> {
+  async validatePeriodOpen(period: string): Promise<void> {
     const periodInfo = MOCK_PERIODS.find((p) => p.period === period);
 
     // If period not found, treat as OPEN (fail-open for mocks)
     if (!periodInfo) {
-      return true;
+      return;
     }
 
-    return periodInfo.status === 'OPEN';
+    if (periodInfo.status !== 'OPEN') {
+      throw new Error(`งวดบัญชี ${period} ถูกปิดแล้ว`);
+    }
   }
 
   getCurrentPeriod(): string {
@@ -26,27 +28,30 @@ export class MockPeriodService implements IPeriodService {
     return openPeriod?.period ?? '2025-01';
   }
 
-  async closePeriod(period: string, closedBy: string): Promise<PeriodInfo> {
+  async getAll(): Promise<unknown[]> {
+    return MOCK_PERIODS.map((p) => ({
+      period: p.period,
+      status: p.status === 'OPEN' ? PeriodStatus.OPEN : PeriodStatus.CLOSED,
+      closedAt: p.closedAt,
+      closedBy: p.closedBy,
+    }));
+  }
+
+  async create(period: string, openedBy: string): Promise<unknown> {
     return {
       period,
-      status: PeriodStatus.CLOSED,
-      closedAt: new Date().toISOString(),
-      closedBy,
+      status: PeriodStatus.OPEN,
+      openedBy,
+      openedAt: new Date().toISOString(),
     };
   }
 
-  async getPeriodInfo(period: string): Promise<PeriodInfo | null> {
-    const periodData = MOCK_PERIODS.find((p) => p.period === period);
-
-    if (!periodData) {
-      return null;
-    }
-
+  async close(id: string, closedBy: string): Promise<unknown> {
     return {
-      period: periodData.period,
-      status: periodData.status === 'OPEN' ? PeriodStatus.OPEN : PeriodStatus.CLOSED,
-      closedAt: periodData.closedAt,
-      closedBy: periodData.closedBy,
+      id,
+      status: PeriodStatus.CLOSED,
+      closedAt: new Date().toISOString(),
+      closedBy,
     };
   }
 }

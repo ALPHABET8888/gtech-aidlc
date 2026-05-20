@@ -28,12 +28,12 @@ export { ReportFilterDto } from './reports/dto';
 // Report Services
 export { ReportQueryService } from './reports/report-query.service';
 
-// Mock Services & Tokens
+// DI Tokens
 export {
-  MockTxLogService,
-  MockStockValidationService,
-  MockPeriodService,
   TX_LOG_SERVICE,
   STOCK_VALIDATION_SERVICE,
   PERIOD_SERVICE,
-} from './mocks';
+} from './di-tokens';
+
+// Adapters
+export { ReportsTxLogAdapter } from './adapters/reports-tx-log.adapter';

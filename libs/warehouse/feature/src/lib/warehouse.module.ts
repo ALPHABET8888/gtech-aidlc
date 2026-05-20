@@ -1,17 +1,21 @@
 import { Module } from '@nestjs/common';
 import { WarehouseDataAccessModule } from '@autoflow/warehouse-data-access';
+import {
+  MasterDataModule,
+  TxLogService,
+  MaCalculationService,
+  StockValidationService,
+  PeriodService,
+} from '@autoflow/master-data-feature';
 import { StockCountService } from './services/stock-count.service';
 import { StockTransferService } from './services/stock-transfer.service';
 import { WriteOffService } from './services/write-off.service';
 import { CountSessionController } from './controllers/count-session.controller';
 import { TransferController } from './controllers/transfer.controller';
 import { WriteOffController } from './controllers/write-off.controller';
-import { MockTxLogService } from './mocks/mock-tx-log.service';
-import { MockMaService } from './mocks/mock-ma.service';
-import { MockStockValidationService } from './mocks/mock-stock-validation.service';
-import { MockPeriodService } from './mocks/mock-period.service';
-import { MockMasterDataQueryService } from './mocks/mock-master-data-query.service';
+import { WarehouseMasterDataController } from './controllers/warehouse-master-data.controller';
 import { WAREHOUSE_DI_TOKENS } from './mocks/di-tokens';
+import { WarehouseMasterDataQueryAdapter } from './adapters/master-data-query.adapter';
 
 /**
  * WarehouseModule — Warehouse Operations (Stock Count, Transfer, Write-off)
@@ -25,13 +29,8 @@ import { WAREHOUSE_DI_TOKENS } from './mocks/di-tokens';
  * ## Dependency Injection Strategy
  *
  * External dependencies (TX Log, MA Calculation, Stock Validation, Period, Master Data)
- * are injected via DI tokens defined in `WAREHOUSE_DI_TOKENS`. Currently wired to mock
- * implementations for self-contained development and testing. To swap with real services:
- *
- * ```typescript
- * // Replace mock with real service:
- * { provide: WAREHOUSE_DI_TOKENS.TX_LOG_SERVICE, useClass: RealTxLogService }
- * ```
+ * are injected via DI tokens defined in `WAREHOUSE_DI_TOKENS`. Wired to real services
+ * from MasterDataModule via `useExisting` bindings.
  *
  * ## OpenAPI Tags
  * - `warehouse / stock-count` — Count session lifecycle endpoints
@@ -41,41 +40,42 @@ import { WAREHOUSE_DI_TOKENS } from './mocks/di-tokens';
  * @see design.md — Architecture section for full module diagram
  */
 @Module({
-  imports: [WarehouseDataAccessModule],
-  controllers: [CountSessionController, TransferController, WriteOffController],
+  imports: [WarehouseDataAccessModule, MasterDataModule],
+  controllers: [CountSessionController, TransferController, WriteOffController, WarehouseMasterDataController],
   providers: [
     // Domain services
     StockCountService,
     StockTransferService,
     WriteOffService,
 
-    // Mock service providers — replaceable with real implementations via DI tokens
+    // Real service providers via DI tokens
     {
       provide: WAREHOUSE_DI_TOKENS.TX_LOG_SERVICE,
-      useClass: MockTxLogService,
+      useExisting: TxLogService,
     },
     {
       provide: WAREHOUSE_DI_TOKENS.MA_SERVICE,
-      useClass: MockMaService,
+      useExisting: MaCalculationService,
     },
     {
       provide: WAREHOUSE_DI_TOKENS.STOCK_VALIDATION_SERVICE,
-      useClass: MockStockValidationService,
+      useExisting: StockValidationService,
     },
     {
       provide: WAREHOUSE_DI_TOKENS.PERIOD_SERVICE,
-      useClass: MockPeriodService,
+      useExisting: PeriodService,
     },
     {
       provide: WAREHOUSE_DI_TOKENS.MASTER_DATA_QUERY_SERVICE,
-      useClass: MockMasterDataQueryService,
+      useClass: WarehouseMasterDataQueryAdapter,
     },
+    // Adapter for master data queries
+    WarehouseMasterDataQueryAdapter,
   ],
   exports: [
     StockCountService,
     StockTransferService,
     WriteOffService,
-    // Export DI tokens so other modules can access mock services if needed
     WAREHOUSE_DI_TOKENS.TX_LOG_SERVICE,
     WAREHOUSE_DI_TOKENS.MA_SERVICE,
     WAREHOUSE_DI_TOKENS.STOCK_VALIDATION_SERVICE,

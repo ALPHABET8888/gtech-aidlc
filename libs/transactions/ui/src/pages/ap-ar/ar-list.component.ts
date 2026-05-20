@@ -149,6 +149,7 @@ export class ArListComponent implements OnInit {
   filterStatus = '';
 
   ngOnInit(): void {
+    this.state.loadMasterData();
     this.loadData();
   }
 

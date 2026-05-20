@@ -150,39 +150,20 @@ run_migrations() {
 
   MIGRATION_LOG=$(mktemp)
 
-  npx prisma migrate dev >"$MIGRATION_LOG" 2>&1 &
-  pid=$!
+  if npx prisma migrate deploy >"$MIGRATION_LOG" 2>&1; then
+    migration_output=$(cat "$MIGRATION_LOG")
+    rm -f "$MIGRATION_LOG"
 
-  elapsed=0
-  while kill -0 "$pid" 2>/dev/null; do
-    if [ "$elapsed" -ge 120 ]; then
-      kill "$pid" 2>/dev/null
-      wait "$pid" 2>/dev/null
-      rm -f "$MIGRATION_LOG"
-      die "Migration timed out: prisma migrate dev did not complete within 120 seconds.
-   Check database connectivity and inspect migration files."
+    if printf '%s' "$migration_output" | grep -q "No pending migrations"; then
+      info "Database schema is already in sync — no pending migrations."
+    else
+      success "Prisma migrations applied successfully."
     fi
-    sleep 2
-    elapsed=$((elapsed + 2))
-  done
-
-  exit_code=0
-  wait "$pid" || exit_code=$?
-
-  if [ "$exit_code" -ne 0 ]; then
+  else
     migration_output=$(cat "$MIGRATION_LOG")
     rm -f "$MIGRATION_LOG"
     die "Migration failed:
 $migration_output"
-  fi
-
-  migration_output=$(cat "$MIGRATION_LOG")
-  rm -f "$MIGRATION_LOG"
-
-  if printf '%s' "$migration_output" | grep -q "Already in sync"; then
-    info "Database schema is already in sync — no pending migrations."
-  else
-    success "Prisma migrations applied successfully."
   fi
 }
 

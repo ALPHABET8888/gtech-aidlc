@@ -110,12 +110,13 @@ export class SalesCnService {
       const currentMa = await this.maService.getCurrentMa(firstItem.itemId, warehouseId);
 
       // MA recalculation for stock-in at original COGS unit cost
-      this.maService.calculateMa({
-        currentQty: currentStock,
-        currentMa,
-        qtyChange: totalReturnQty,
-        unitCost: cogsUnit,
-      });
+      await this.maService.calculateNewMa(
+        firstItem.itemId,
+        warehouseId,
+        totalReturnQty,
+        totalReturnQty * cogsUnit,
+        true, // stock increase
+      );
 
       // Create TX log entry — stock increase (positive qty)
       txEntry = await this.txLogService.createTx({

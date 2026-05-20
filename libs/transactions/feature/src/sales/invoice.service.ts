@@ -67,7 +67,7 @@ export class InvoiceService {
 
     // Validate stock availability for all items
     for (const item of dto.items) {
-      await this.stockValidationService.validateStockAvailability(
+      await this.stockValidationService.validateStockAvailable(
         item.itemId,
         dto.warehouseId,
         item.qty,
@@ -81,10 +81,12 @@ export class InvoiceService {
       firstItem.itemId,
       dto.warehouseId,
     );
-    const maResult = this.maCalculationService.calculateStockOut(
-      await this.stockValidationService.getStockBalance(firstItem.itemId, dto.warehouseId),
-      currentMa,
+    const maResult = await this.maCalculationService.calculateNewMa(
+      firstItem.itemId,
+      dto.warehouseId,
       totalQty,
+      totalQty * currentMa,
+      false, // stock decrease
     );
 
     const grandTotal = Number(jobOrder.grandTotal);
@@ -231,7 +233,7 @@ export class InvoiceService {
   ): Promise<InvoiceResult> {
     // Validate stock availability for all items
     for (const item of dto.items) {
-      await this.stockValidationService.validateStockAvailability(
+      await this.stockValidationService.validateStockAvailable(
         item.itemId,
         dto.warehouseId,
         item.qty,

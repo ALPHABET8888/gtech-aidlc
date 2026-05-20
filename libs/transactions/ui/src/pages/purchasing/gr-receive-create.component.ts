@@ -238,6 +238,10 @@ export class GrReceiveCreateComponent {
   readonly state = inject(TransactionsStateService);
   private readonly router = inject(Router);
 
+  constructor() {
+    this.state.loadMasterData();
+  }
+
   vendorId = '';
   taxInvoiceNo = '';
   warehouseId = '';

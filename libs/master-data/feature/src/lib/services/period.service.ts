@@ -87,6 +87,14 @@ export class PeriodService implements IPeriodService {
   // ── IPeriodService interface methods ──
 
   /**
+   * Get current period in YYYY-MM format.
+   */
+  getCurrentPeriod(): string {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  /**
    * Get all periods — satisfies IPeriodService.getAll().
    */
   async getAll(): Promise<Period[]> {
