@@ -91,6 +91,40 @@
 **Artifacts**: autoflow-foundation/tasks.md, autoflow-foundation/decisions-tasks.md
 **Outcome**: 18 tasks across 8 phases, 4 execution waves (3 parallel waves). Component-first strategy, bottom-up. Coverage: 7 components, 3 entities, 4 endpoints. All design elements covered.
 
+### [2025-05-19T10:00:00Z] Design (transactions): Decision Gate
+
+**Phase**: design
+**Action**: decision-gate
+**Artifacts**: autoflow-transactions/decisions-design.md
+**Outcome**: 10 decisions — Domain-based services, Simple enum JO state machine, Payment allocation array, Interface+Mock via DI, Dedicated clearing table, VAT in TX Log, Angular Signals, Template-driven forms (validated: keep), fast-check PBT, Offset pagination. 1 medium concern flagged (template-driven + complex validation) — user confirmed keep.
+
+### [2025-05-19T10:05:00Z] Design (transactions): Generation
+
+**Phase**: design
+**Action**: generation
+**Artifacts**: autoflow-transactions/design.md, design/components.md, design/data-model.md, design/api-spec.md, design/integration.md, design/implementation.md, design/correctness.md
+**Outcome**: 5 components, 6 entities, 19 endpoints, 8 PBT properties, modular format. Mock layer for Master Data dependency. GR/IR Clearing dedicated table. Offset pagination.
+
+### [2025-05-19T10:10:00Z] Design (transactions): Approval
+
+**Phase**: design
+**Action**: approval
+**Artifacts**: autoflow-transactions/design.md + design/*
+**Outcome**: Design approved. Proceeding to tasks phase.
+
+### [2025-05-19T10:12:00Z] Tasks (transactions): Decision Gate
+
+**Phase**: tasks
+**Action**: decision-gate
+**Artifacts**: autoflow-transactions/decisions-tasks.md
+**Outcome**: 7 decisions — Vertical slice with infra-first, Test-after, Mock→Data→Sales→Purchasing→AP/AR priority, Standard granularity (1-2d), Include frontend, PBT after services, T-shirt sizes. No conflicts.
+
+### [2025-05-19T10:15:00Z] Tasks (transactions): Generation
+
+**Phase**: tasks
+**Action**: generation
+**Artifacts**: autoflow-transactions/tasks.md
+**Outcome**: 24 tasks across 6 phases, 3 execution waves (Wave 2 has 3 parallel phases: Sales, Purchasing, AP/AR). Coverage: 5 components, 6 entities, 19 endpoints, 6 integrations, 8 PBT properties. All 16 stories covered.
 ### [2026-05-19T10:00:00Z] Design (Warehouse): Decision Gate
 
 **Phase**: design

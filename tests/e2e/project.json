@@ -1,0 +1,14 @@
+{
+  "name": "e2e",
+  "sourceRoot": "tests/e2e",
+  "projectType": "library",
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/tests/e2e"],
+      "options": {
+        "jestConfig": "tests/e2e/jest.config.ts"
+      }
+    }
+  }
+}

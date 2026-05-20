@@ -13,3 +13,14 @@ export type {
   PeriodInfo,
 } from './period-service.interface';
 export { PeriodStatus } from './period-service.interface';
+export type {
+  IRefChainService,
+  RefChainDto,
+} from './ref-chain-service.interface';
+export type {
+  IMasterDataLookupService,
+  Item,
+  Vendor,
+  Customer,
+  Warehouse,
+} from './master-data-lookup-service.interface';

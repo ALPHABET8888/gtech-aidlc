@@ -19,6 +19,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
       ".prisma/client": ["node_modules/.prisma/client"],
@@ -28,9 +30,13 @@
       "@autoflow/shared-prisma": ["libs/shared-prisma/src/index.ts"],
       "@autoflow/shared-errors": ["libs/shared-errors/src/index.ts"],
       "@autoflow/shared-utils": ["libs/shared-utils/src/index.ts"],
+      "@autoflow/shared-config": ["libs/shared-config/src/index.ts"],
       "@autoflow/warehouse-data-access": ["libs/warehouse/data-access/src/index.ts"],
       "@autoflow/warehouse-feature": ["libs/warehouse/feature/src/index.ts"],
-      "@autoflow/warehouse-ui": ["libs/warehouse/ui/src/index.ts"]
+      "@autoflow/warehouse-ui": ["libs/warehouse/ui/src/index.ts"],
+      "@autoflow/transactions-data-access": ["libs/transactions/data-access/src/index.ts"],
+      "@autoflow/transactions-feature": ["libs/transactions/feature/src/index.ts"],
+      "@autoflow/transactions-ui": ["libs/transactions/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

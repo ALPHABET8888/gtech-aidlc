@@ -10,7 +10,7 @@ datasource db {
   schemas  = ["master_data", "transactions", "warehouse", "reports"]
 }
 
-// ─── Enums ───────────────────────────────────────────────────────────────────
+// ─── Enums (master_data) ─────────────────────────────────────────────────────
 
 enum Role {
   CASHIER
@@ -22,6 +22,33 @@ enum Role {
 
   @@schema("master_data")
 }
+
+// ─── Enums (transactions) ────────────────────────────────────────────────────
+
+enum JOStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+
+  @@schema("transactions")
+}
+
+enum ApArStatus {
+  OPEN
+  PARTIAL
+  CLOSED
+
+  @@schema("transactions")
+}
+
+enum ClearingStatus {
+  OPEN
+  CLOSED
+
+  @@schema("transactions")
+}
+
+// ─── Enums (warehouse) ───────────────────────────────────────────────────────
 
 enum CountSessionStatus {
   INITIATED
@@ -49,7 +76,7 @@ enum WriteOffStatus {
   @@schema("warehouse")
 }
 
-// ─── Models ──────────────────────────────────────────────────────────────────
+// ─── Models (master_data) ────────────────────────────────────────────────────
 
 model User {
   id           String   @id @default(uuid()) @db.Uuid
@@ -83,7 +110,129 @@ model RefreshToken {
   @@schema("master_data")
 }
 
-// ─── Warehouse Schema ────────────────────────────────────────────────────────
+// ─── Models (transactions) ───────────────────────────────────────────────────
+
+model JobOrder {
+  id          String   @id @default(uuid()) @db.Uuid
+  joNumber    String   @unique @map("jo_number")
+  customerId  String   @map("customer_id") @db.Uuid
+  status      JOStatus @default(OPEN)
+  hasTempDo   Boolean  @default(false) @map("has_temp_do")
+  tempDoId    String?  @map("temp_do_id") @db.Uuid
+  invoiceId   String?  @map("invoice_id") @db.Uuid
+  items       Json
+  totalAmount Decimal  @map("total_amount") @db.Decimal(12, 2)
+  vatAmount   Decimal  @map("vat_amount") @db.Decimal(12, 2)
+  grandTotal  Decimal  @map("grand_total") @db.Decimal(12, 2)
+  notes       String?
+  createdBy   String   @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([customerId], name: "idx_job_order_customer")
+  @@index([status, createdAt], name: "idx_job_order_status_date")
+  @@map("job_order")
+  @@schema("transactions")
+}
+
+model APOpenItem {
+  id              String     @id @default(uuid()) @db.Uuid
+  vendorId        String     @map("vendor_id") @db.Uuid
+  txId            String     @map("tx_id") @db.Uuid
+  txType          String     @map("tx_type")
+  originalAmount  Decimal    @map("original_amount") @db.Decimal(12, 2)
+  remainingAmount Decimal    @map("remaining_amount") @db.Decimal(12, 2)
+  vatAmount       Decimal    @map("vat_amount") @db.Decimal(12, 2)
+  status          ApArStatus @default(OPEN)
+  taxInvoiceNo    String     @map("tax_invoice_no")
+  dueDate         DateTime?  @map("due_date")
+  period          String
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  allocations APPaymentAllocation[]
+
+  @@index([vendorId, status], name: "idx_ap_open_item_vendor_status")
+  @@index([status, dueDate], name: "idx_ap_open_item_status_due")
+  @@map("ap_open_item")
+  @@schema("transactions")
+}
+
+model AROpenItem {
+  id              String     @id @default(uuid()) @db.Uuid
+  customerId      String     @map("customer_id") @db.Uuid
+  txId            String     @map("tx_id") @db.Uuid
+  txType          String     @map("tx_type")
+  originalAmount  Decimal    @map("original_amount") @db.Decimal(12, 2)
+  remainingAmount Decimal    @map("remaining_amount") @db.Decimal(12, 2)
+  vatAmount       Decimal    @map("vat_amount") @db.Decimal(12, 2)
+  status          ApArStatus @default(OPEN)
+  taxInvoiceNo    String?    @map("tax_invoice_no")
+  dueDate         DateTime?  @map("due_date")
+  period          String
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  allocations ARPaymentAllocation[]
+
+  @@index([customerId, status], name: "idx_ar_open_item_customer_status")
+  @@index([status, dueDate], name: "idx_ar_open_item_status_due")
+  @@map("ar_open_item")
+  @@schema("transactions")
+}
+
+model APPaymentAllocation {
+  id           String   @id @default(uuid()) @db.Uuid
+  paymentTxId  String   @map("payment_tx_id") @db.Uuid
+  apOpenItemId String   @map("ap_open_item_id") @db.Uuid
+  amount       Decimal  @db.Decimal(12, 2)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  apOpenItem APOpenItem @relation(fields: [apOpenItemId], references: [id])
+
+  @@index([paymentTxId], name: "idx_ap_alloc_payment_tx")
+  @@index([apOpenItemId], name: "idx_ap_alloc_open_item")
+  @@map("ap_payment_allocation")
+  @@schema("transactions")
+}
+
+model ARPaymentAllocation {
+  id           String   @id @default(uuid()) @db.Uuid
+  paymentTxId  String   @map("payment_tx_id") @db.Uuid
+  arOpenItemId String   @map("ar_open_item_id") @db.Uuid
+  amount       Decimal  @db.Decimal(12, 2)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  arOpenItem AROpenItem @relation(fields: [arOpenItemId], references: [id])
+
+  @@index([paymentTxId], name: "idx_ar_alloc_payment_tx")
+  @@index([arOpenItemId], name: "idx_ar_alloc_open_item")
+  @@map("ar_payment_allocation")
+  @@schema("transactions")
+}
+
+model GrIrClearing {
+  id             String         @id @default(uuid()) @db.Uuid
+  grReturnTxId   String         @map("gr_return_tx_id") @db.Uuid
+  grReceiveTxId  String         @map("gr_receive_tx_id") @db.Uuid
+  vendorId       String         @map("vendor_id") @db.Uuid
+  itemId         String         @map("item_id") @db.Uuid
+  qty            Decimal        @db.Decimal(12, 4)
+  clearingAmount Decimal        @map("clearing_amount") @db.Decimal(12, 2)
+  status         ClearingStatus @default(OPEN)
+  closedByTxId   String?        @map("closed_by_tx_id") @db.Uuid
+  closedByType   String?        @map("closed_by_type")
+  ppvAmount      Decimal?       @map("ppv_amount") @db.Decimal(12, 2)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  closedAt       DateTime?      @map("closed_at")
+
+  @@index([vendorId, status], name: "idx_clearing_vendor_status")
+  @@index([grReturnTxId], name: "idx_clearing_gr_return_tx")
+  @@map("gr_ir_clearing")
+  @@schema("transactions")
+}
+
+// ─── Models (warehouse) ──────────────────────────────────────────────────────
 
 model CountSession {
   id          String             @id @default(uuid()) @db.Uuid

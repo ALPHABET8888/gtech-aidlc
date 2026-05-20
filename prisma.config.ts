@@ -7,8 +7,10 @@ export default defineConfig({
   datasource: {
     url: env('DATABASE_URL'),
   },
+  migrate: {
+    url: env('DATABASE_URL'),
+  },
   migrations: {
-    // url: env('DATABASE_URL'),
     seed: 'npx tsx prisma/seed.ts',
   },
 });

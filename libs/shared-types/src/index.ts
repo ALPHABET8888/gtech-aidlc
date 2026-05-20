@@ -18,6 +18,14 @@ export type {
 } from './interfaces/stock-validation-service.interface';
 export type { IPeriodService, PeriodInfo } from './interfaces/period-service.interface';
 export { PeriodStatus } from './interfaces/period-service.interface';
+export type { IRefChainService, RefChainDto } from './interfaces/ref-chain-service.interface';
+export type {
+  IMasterDataLookupService,
+  Item,
+  Vendor,
+  Customer,
+  Warehouse,
+} from './interfaces/master-data-lookup-service.interface';
 
 // DTOs
 export type { CreateTxDto } from './dto/create-tx.dto';

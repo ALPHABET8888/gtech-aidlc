@@ -1,0 +1,14 @@
+{
+  "name": "properties",
+  "sourceRoot": "tests/properties",
+  "projectType": "library",
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/tests/properties"],
+      "options": {
+        "jestConfig": "tests/properties/jest.config.ts"
+      }
+    }
+  }
+}
