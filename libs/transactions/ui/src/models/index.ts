@@ -317,8 +317,8 @@ export interface ApOpenItemDetail {
   status: ApArStatus;
   originalAmount: number;
   remainingAmount: number;
-  refTxId: string;
-  refTxType: string;
+  txId: string;
+  txType: string;
   createdAt: string;
 }
 
@@ -328,8 +328,8 @@ export interface ArOpenItemDetail {
   status: ApArStatus;
   originalAmount: number;
   remainingAmount: number;
-  refTxId: string;
-  refTxType: string;
+  txId: string;
+  txType: string;
   createdAt: string;
 }
 

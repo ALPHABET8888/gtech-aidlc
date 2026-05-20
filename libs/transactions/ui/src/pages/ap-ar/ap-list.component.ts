@@ -70,8 +70,8 @@ import { TransactionsStateService } from '../../services/transactions-state.serv
             <tbody>
               @for (item of state.apOpenItems(); track item.id) {
                 <tr>
-                  <td>{{ item.refTxId.slice(0, 8) }}...</td>
-                  <td>{{ item.refTxType }}</td>
+                  <td>{{ item.txId.slice(0, 8) }}...</td>
+                  <td>{{ item.txType }}</td>
                   <td>{{ getVendorName(item.vendorId) }}</td>
                   <td class="col-amount">{{ item.originalAmount | number:'1.2-2' }}</td>
                   <td class="col-amount">{{ item.remainingAmount | number:'1.2-2' }}</td>

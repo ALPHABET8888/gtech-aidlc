@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { GrIrClearingRepository } from '@autoflow/transactions-data-access';
+import { GrIrClearingRepository, FindClearingsOptions } from '@autoflow/transactions-data-access';
 import { GrIrClearing, ClearingStatus, Prisma } from '@prisma/client';
 import { ClearingNotOpenException } from '../exceptions';
+import { PaginatedResponseDto } from '../dto/shared/paginated-response.dto';
 
 /**
  * GrIrClearingService — manages GR/IR Clearing lifecycle.
@@ -83,6 +84,15 @@ export class GrIrClearingService {
    */
   async findById(clearingId: string): Promise<GrIrClearing | null> {
     return this.clearingRepo.findById(clearingId);
+  }
+
+  /**
+   * List clearings with pagination and optional filters.
+   */
+  async listClearings(options: FindClearingsOptions = {}): Promise<PaginatedResponseDto<GrIrClearing>> {
+    const { page = 1, limit = 20 } = options;
+    const { data, total } = await this.clearingRepo.findMany(options);
+    return PaginatedResponseDto.create(data, total, page, limit);
   }
 
   /**
