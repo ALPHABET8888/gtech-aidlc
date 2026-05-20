@@ -1,5 +1,6 @@
 /**
- * Result of a Moving Average calculation.
+ * Result of a Moving Average calculation operation.
+ * Contains before/after snapshots of both MA and stock quantity.
  */
 export interface MaCalculationResult {
   /** MA before this transaction */
@@ -10,8 +11,6 @@ export interface MaCalculationResult {
   stockBefore: number;
   /** Stock quantity after */
   stockAfter: number;
-  /** Total inventory value after */
-  totalValueAfter: number;
 }
 
 /**
@@ -39,18 +38,33 @@ export interface MaCalculationInput {
  */
 export interface IMaCalculationService {
   /**
-   * Calculate new MA for a stock-in transaction.
-   * Formula: newMA = (currentQty * currentMA + incomingQty * incomingCost) / (currentQty + incomingQty)
+   * Calculate new Moving Average and update stock balance atomically.
+   * Must be called within a Prisma interactive transaction to hold the row lock.
+   *
+   * @param itemId - The item ID
+   * @param warehouseId - The warehouse ID
+   * @param qty - Quantity of the transaction (always positive)
+   * @param value - Total value of the incoming/outgoing goods (always positive)
+   * @param isIncrease - true for stock-increasing TX, false for stock-decreasing TX
+   * @param tx - Optional Prisma transaction client (required for row locking)
+   * @returns MaCalculationResult with before/after snapshots
    */
-  calculateMa(input: MaCalculationInput): MaCalculationResult;
+  calculateNewMa(
+    itemId: string,
+    warehouseId: string,
+    qty: number,
+    value: number,
+    isIncrease: boolean,
+    tx?: unknown,
+  ): Promise<MaCalculationResult>;
 
   /**
-   * Calculate stock-out impact (uses current MA, no recalculation).
-   */
-  calculateStockOut(currentQty: number, currentMa: number, outQty: number): MaCalculationResult;
-
-  /**
-   * Get current MA for an item in a warehouse.
+   * Get current Moving Average for an item at a specific warehouse.
+   * Read-only — no locking required.
+   *
+   * @param itemId - The item ID
+   * @param warehouseId - The warehouse ID
+   * @returns Current MA value, or 0 if no stock balance exists
    */
   getCurrentMa(itemId: string, warehouseId: string): Promise<number>;
 }

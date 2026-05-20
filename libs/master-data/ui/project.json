@@ -1,0 +1,7 @@
+{
+  "name": "master-data-ui",
+  "sourceRoot": "libs/master-data/ui/src",
+  "projectType": "library",
+  "tags": ["scope:master-data", "type:ui"],
+  "targets": {}
+}

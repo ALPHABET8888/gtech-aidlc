@@ -12,7 +12,9 @@
     "../../libs/shared-types/src/**/*.ts",
     "../../libs/shared-errors/src/**/*.ts",
     "../../libs/shared-utils/src/**/*.ts",
-    "../../libs/shared-config/src/**/*.ts"
+    "../../libs/shared-config/src/**/*.ts",
+    "../../libs/master-data/data-access/src/**/*.ts",
+    "../../libs/master-data/feature/src/**/*.ts"
   ],
   "exclude": [
     "src/**/*.spec.ts",

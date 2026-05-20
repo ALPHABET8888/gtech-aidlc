@@ -31,9 +31,9 @@
       "@autoflow/shared-errors": ["libs/shared-errors/src/index.ts"],
       "@autoflow/shared-utils": ["libs/shared-utils/src/index.ts"],
       "@autoflow/shared-config": ["libs/shared-config/src/index.ts"],
-      "@autoflow/transactions-data-access": ["libs/transactions/data-access/src/index.ts"],
-      "@autoflow/transactions-feature": ["libs/transactions/feature/src/index.ts"],
-      "@autoflow/transactions-ui": ["libs/transactions/ui/src/index.ts"]
+      "@autoflow/master-data-data-access": ["libs/master-data/data-access/src/index.ts"],
+      "@autoflow/master-data-feature": ["libs/master-data/feature/src/index.ts"],
+      "@autoflow/master-data-ui": ["libs/master-data/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

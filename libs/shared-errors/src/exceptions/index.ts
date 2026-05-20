@@ -1,5 +1,6 @@
 export { DomainException } from './domain-exception';
 export { StockNegativeException } from './stock-negative.exception';
+export { StockFrozenException } from './stock-frozen.exception';
 export { PeriodLockedException } from './period-locked.exception';
 export { ImmutableTxException } from './immutable-tx.exception';
 export { RefChainInvalidException } from './ref-chain-invalid.exception';

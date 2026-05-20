@@ -7,6 +7,7 @@ export type { ErrorCode } from './constants/error-codes';
 
 // Domain exceptions
 export { StockNegativeException } from './exceptions/stock-negative.exception';
+export { StockFrozenException } from './exceptions/stock-frozen.exception';
 export { PeriodLockedException } from './exceptions/period-locked.exception';
 export { ImmutableTxException } from './exceptions/immutable-tx.exception';
 export { RefChainInvalidException } from './exceptions/ref-chain-invalid.exception';

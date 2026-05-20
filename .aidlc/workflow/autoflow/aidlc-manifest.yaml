@@ -65,17 +65,38 @@ steering:
 units:
   - name: "master-data"
     displayName: "ข้อมูลหลัก (Master Data & Core Engine)"
-    status: "not-started"
-    phase: null
-    completedPhases: []
+    status: "in-progress"
+    phase: "tasks"
+    completedPhases: [design, tasks]
     implementationMode: null
     implementation:
-      totalTasks: 0
+      totalTasks: 35
       completedTasks: 0
       currentTask: null
       currentWave: null
-    artifacts: {}
-    decisions: {}
+    artifacts:
+      design:
+        status: "approved"
+        timestamp: "2025-05-19T10:00:00Z"
+        files: [design.md]
+      tasks:
+        status: "approved"
+        timestamp: "2025-05-19T10:30:00Z"
+        files: [tasks.md]
+    decisions:
+      design:
+        tx-log-model: "Single wide table with nullable columns"
+        ma-concurrency: "Database-level row lock (SELECT FOR UPDATE)"
+        stock-balance: "Dedicated stock_balance table"
+        period-model: "Period table with OPEN/CLOSED status"
+        master-crud: "Standard REST CRUD per entity"
+        approval-guard: "NestJS Guard + Decorator"
+        void-pattern: "Service-layer mirror in single DB transaction"
+        ref-chain: "Validation service with rule registry"
+        ui-library: "Angular Material"
+        state-mgmt: "Angular Signals + Services"
+        pbt: "Property-Based Testing with fast-check"
+        pagination: "Offset-based"
   - name: "transactions"
     displayName: "ข้อมูลพื้นฐาน (Transaction Operations)"
     status: "in-progress"

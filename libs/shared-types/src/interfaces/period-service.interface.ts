@@ -28,26 +28,34 @@ export interface PeriodInfo {
  */
 export interface IPeriodService {
   /**
-   * Check if a period is open for posting.
-   * Must be called before POST for every TX.
+   * Validate that a period is open and can accept new postings.
+   * Throws PeriodLockedException if the period is closed.
    *
+   * @param period - Period string in YYYY-MM format
    * @throws PeriodLockedException if period is closed
+   * @throws NotFoundException if period does not exist
    */
-  validatePeriodOpen(period: string): Promise<boolean>;
+  validatePeriodOpen(period: string): Promise<void>;
 
   /**
-   * Get current active period (YYYY-MM format).
+   * List all periods.
    */
-  getCurrentPeriod(): string;
+  getAll(): Promise<unknown[]>;
 
   /**
-   * Close a period — prevents any future postings.
+   * Open a new period.
+   *
+   * @param period - Period string in YYYY-MM format
+   * @param openedBy - User ID opening the period
+   */
+  create(period: string, openedBy: string): Promise<unknown>;
+
+  /**
+   * Close an existing period — prevents any future postings.
    * Requires CFO role.
+   *
+   * @param id - Period ID
+   * @param closedBy - User ID closing the period
    */
-  closePeriod(period: string, closedBy: string): Promise<PeriodInfo>;
-
-  /**
-   * Get period information.
-   */
-  getPeriodInfo(period: string): Promise<PeriodInfo | null>;
+  close(id: string, closedBy: string): Promise<unknown>;
 }

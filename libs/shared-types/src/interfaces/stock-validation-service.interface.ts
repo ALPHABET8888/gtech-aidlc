@@ -18,25 +18,28 @@ export interface StockValidationResult {
  */
 export interface IStockValidationService {
   /**
-   * Validate that sufficient stock exists for a stock-out operation.
-   * Must be called before POST for any TX that reduces stock.
+   * Validate that sufficient stock is available for a stock-out operation.
+   * Also checks if stock is frozen (during stock count).
    *
+   * @param itemId - The item ID
+   * @param warehouseId - The warehouse ID
+   * @param qty - Quantity to deduct (positive number)
+   * @throws StockFrozenException if stock is frozen during count
    * @throws StockNegativeException if stock would go negative
    */
-  validateStockAvailability(
+  validateStockAvailable(
     itemId: string,
     warehouseId: string,
-    requiredQty: number,
-  ): Promise<StockValidationResult>;
+    qty: number,
+  ): Promise<void>;
 
   /**
-   * Get current stock balance for an item in a warehouse.
+   * Get current stock balance quantity for an item in a warehouse.
+   * Returns 0 if no stock balance record exists.
+   *
+   * @param itemId - The item ID
+   * @param warehouseId - The warehouse ID
+   * @returns Current stock quantity
    */
   getStockBalance(itemId: string, warehouseId: string): Promise<number>;
-
-  /**
-   * Check if stock is frozen (during stock count).
-   * Frozen stock cannot be issued or received.
-   */
-  isStockFrozen(warehouseId: string): Promise<boolean>;
 }

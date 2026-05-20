@@ -4,6 +4,7 @@
  * Creates:
  * - 1 Admin user (admin / Admin@123)
  * - 1 test user per role (CASHIER, STORE, SUPERVISOR, MANAGER, CFO, ADMIN)
+ * - Master data: items, warehouses, vendors, customers, roles, periods
  *
  * Uses upsert pattern for idempotency — safe to run multiple times.
  */
@@ -12,6 +13,7 @@ import 'dotenv/config';
 import { PrismaClient, Role } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
+import { seedMasterData } from './seed-master-data';
 
 const connectionString =
   process.env['DATABASE_URL'] ??
@@ -72,6 +74,7 @@ const seedUsers: SeedUser[] = [
 async function main(): Promise<void> {
   console.log('🌱 Seeding Autoflow database...\n');
 
+  // ─── Phase 1: Users ─────────────────────────────────────────────────────────
   const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, BCRYPT_ROUNDS);
 
   for (const user of seedUsers) {
@@ -100,6 +103,9 @@ async function main(): Promise<void> {
 
   console.log(`\n✅ Seeded ${seedUsers.length} users successfully.`);
   console.log(`   Default password: ${DEFAULT_PASSWORD}`);
+
+  // ─── Phase 2: Master Data ───────────────────────────────────────────────────
+  await seedMasterData(prisma);
 }
 
 main()

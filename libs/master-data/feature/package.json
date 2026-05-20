@@ -1,0 +1,6 @@
+{
+  "name": "@autoflow/master-data-feature",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.js"
+}

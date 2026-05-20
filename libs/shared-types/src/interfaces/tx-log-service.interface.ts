@@ -35,29 +35,24 @@ export interface TxLogEntry {
  */
 export interface ITxLogService {
   /**
-   * Create a new TX log entry in DRAFT status.
+   * Create and POST a new transaction through the full validation pipeline.
+   * Pipeline: Period check → Stock check → RefChain check → MA calculation → POST
    */
-  createTx(dto: Omit<TxLogEntry, 'txId' | 'status' | 'maBefore' | 'maAfter' | 'stockBefore' | 'stockAfter'>): Promise<TxLogEntry>;
-
-  /**
-   * Post a DRAFT TX — validates business rules, calculates MA, updates stock.
-   * This is an atomic operation; failure rolls back all changes.
-   */
-  postTx(txId: string, postedBy: string): Promise<TxLogEntry>;
-
-  /**
-   * Void a POSTED TX — creates a reverse TX with opposite values.
-   * Original TX status becomes VOIDED.
-   */
-  voidTx(txId: string, reason: string, voidedBy: string): Promise<TxLogEntry>;
+  createTx(dto: unknown, userId: string): Promise<unknown>;
 
   /**
    * Retrieve a TX by ID.
    */
-  findById(txId: string): Promise<TxLogEntry | null>;
+  findById(txId: string): Promise<unknown | null>;
 
   /**
-   * Retrieve TX entries by reference chain (e.g., all TXs linked to a JOB_ORDER).
+   * Retrieve TX entries with filters and pagination.
    */
-  findByReference(refField: string, refId: string): Promise<TxLogEntry[]>;
+  findMany?(filters: unknown, pagination?: unknown): Promise<unknown[]>;
+
+  /**
+   * Update TX status (DRAFT→POSTED or POSTED→VOIDED).
+   * Enforces immutability — rejects invalid transitions.
+   */
+  updateStatus?(txId: string, status: string): Promise<unknown>;
 }
