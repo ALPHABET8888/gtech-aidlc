@@ -19,6 +19,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
       ".prisma/client": ["node_modules/.prisma/client"],
@@ -30,6 +32,9 @@
       "@autoflow/shared-utils": ["libs/shared-utils/src/index.ts"],
       "@autoflow/shared-config": ["libs/shared-config/src/index.ts"],
       "@autoflow/reports": ["libs/reports/src/index.ts"]
+      "@autoflow/transactions-data-access": ["libs/transactions/data-access/src/index.ts"],
+      "@autoflow/transactions-feature": ["libs/transactions/feature/src/index.ts"],
+      "@autoflow/transactions-ui": ["libs/transactions/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -78,17 +78,44 @@ units:
     decisions: {}
   - name: "transactions"
     displayName: "ข้อมูลพื้นฐาน (Transaction Operations)"
-    status: "not-started"
-    phase: null
-    completedPhases: []
+    status: "in-progress"
+    phase: "design"
+    completedPhases: [design]
     implementationMode: null
     implementation:
-      totalTasks: 0
+      totalTasks: 24
       completedTasks: 0
       currentTask: null
       currentWave: null
-    artifacts: {}
-    decisions: {}
+    artifacts:
+      design:
+        status: "approved"
+        timestamp: "2025-05-19T10:00:00Z"
+        files: [design.md, design/components.md, design/data-model.md, design/api-spec.md, design/integration.md, design/implementation.md, design/correctness.md]
+      tasks:
+        status: "draft"
+        timestamp: "2025-05-19T10:15:00Z"
+        files: [tasks.md]
+    decisions:
+      design:
+        service-architecture: "Domain-based services (SalesService, PurchasingService, ApArService)"
+        jo-state-machine: "Simple enum + validation in service"
+        ap-ar-matching: "Payment allocation array"
+        mock-strategy: "Interface + Mock implementation via DI"
+        gr-ir-clearing: "Dedicated clearing table with status tracking"
+        vat-handling: "VAT fields in TX Log"
+        frontend-state: "Angular Signals + computed signals"
+        form-handling: "Template-driven forms with custom directives"
+        pbt: "Yes — fast-check for core business rules"
+        pagination: "Offset-based (page/limit)"
+      tasks:
+        breakdown: "Vertical slice with infrastructure-first"
+        testing-approach: "Test-after"
+        priority: "Mock → Data → Sales → Purchasing → AP/AR"
+        granularity: "Standard (1-2 days)"
+        frontend: "Include with backend"
+        pbt-placement: "After service implementation"
+        estimates: "T-shirt sizes"
   - name: "warehouse"
     displayName: "คลังสินค้า (Warehouse Operations)"
     status: "not-started"

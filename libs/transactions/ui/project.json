@@ -1,0 +1,18 @@
+{
+  "name": "transactions-ui",
+  "sourceRoot": "libs/transactions/ui/src",
+  "projectType": "library",
+  "tags": ["scope:transactions", "type:ui"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/transactions/ui",
+        "tsConfig": "libs/transactions/ui/tsconfig.lib.json",
+        "main": "libs/transactions/ui/src/index.ts",
+        "assets": []
+      }
+    }
+  }
+}

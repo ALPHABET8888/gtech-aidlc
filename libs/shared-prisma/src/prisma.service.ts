@@ -10,7 +10,7 @@ export class PrismaService
   constructor() {
     const connectionString =
       process.env['DATABASE_URL'] ??
-      'postgresql://autoflow:autoflow@localhost:5432/autoflow';
+      'postgresql://autoflow:autoflow_secret@localhost:6432/autoflow';
 
     const adapter = new PrismaPg({ connectionString });
 

@@ -1,0 +1,18 @@
+{
+  "name": "transactions-feature",
+  "sourceRoot": "libs/transactions/feature/src",
+  "projectType": "library",
+  "tags": ["scope:transactions", "type:feature"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/transactions/feature",
+        "tsConfig": "libs/transactions/feature/tsconfig.lib.json",
+        "main": "libs/transactions/feature/src/index.ts",
+        "assets": []
+      }
+    }
+  }
+}

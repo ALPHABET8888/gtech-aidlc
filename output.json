@@ -1,6 +1,316 @@
 {
   "graph": {
     "nodes": {
+      "transactions-data-access": {
+        "name": "transactions-data-access",
+        "type": "lib",
+        "data": {
+          "root": "libs/transactions/data-access",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/transactions/data-access",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/eslint.config.js"
+              ],
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "metadata": {
+                "technologies": [
+                  "eslint"
+                ],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "options": {
+                "cwd": "libs/transactions/data-access",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": [
+                  "jest"
+                ],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "npx jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "outputs": [
+                "{workspaceRoot}/coverage/libs/transactions/data-access"
+              ],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "outputPath": "dist/libs/transactions/data-access",
+                "tsConfig": "libs/transactions/data-access/tsconfig.lib.json",
+                "main": "libs/transactions/data-access/src/index.ts",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            }
+          },
+          "name": "transactions-data-access",
+          "tags": [
+            "npm:private",
+            "scope:transactions",
+            "type:data-access"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@autoflow/transactions-data-access",
+              "packageVersion": "0.0.1",
+              "packageMain": "src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "sourceRoot": "libs/transactions/data-access/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "transactions-feature": {
+        "name": "transactions-feature",
+        "type": "lib",
+        "data": {
+          "root": "libs/transactions/feature",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/transactions/feature",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/eslint.config.js"
+              ],
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "metadata": {
+                "technologies": [
+                  "eslint"
+                ],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "options": {
+                "cwd": "libs/transactions/feature",
+                "env": {
+                  "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+                },
+                "command": "jest"
+              },
+              "metadata": {
+                "technologies": [
+                  "jest"
+                ],
+                "description": "Run Jest Tests",
+                "help": {
+                  "command": "npx jest --help",
+                  "example": {
+                    "options": {
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "outputs": [
+                "{workspaceRoot}/coverage/libs/transactions/feature"
+              ],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "outputPath": "dist/libs/transactions/feature",
+                "tsConfig": "libs/transactions/feature/tsconfig.lib.json",
+                "main": "libs/transactions/feature/src/index.ts",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            }
+          },
+          "name": "transactions-feature",
+          "tags": [
+            "npm:private",
+            "scope:transactions",
+            "type:feature"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@autoflow/transactions-feature",
+              "packageVersion": "0.0.1",
+              "packageMain": "src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "sourceRoot": "libs/transactions/feature/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "transactions-ui": {
+        "name": "transactions-ui",
+        "type": "lib",
+        "data": {
+          "root": "libs/transactions/ui",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/transactions/ui",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/eslint.config.js"
+              ],
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "metadata": {
+                "technologies": [
+                  "eslint"
+                ],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": [
+                "{options.outputPath}"
+              ],
+              "options": {
+                "outputPath": "dist/libs/transactions/ui",
+                "tsConfig": "libs/transactions/ui/tsconfig.lib.json",
+                "main": "libs/transactions/ui/src/index.ts",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "dependsOn": [
+                "^build"
+              ],
+              "inputs": [
+                "production",
+                "^production"
+              ],
+              "cache": true
+            }
+          },
+          "name": "transactions-ui",
+          "tags": [
+            "npm:private",
+            "scope:transactions",
+            "type:ui"
+          ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@autoflow/transactions-ui",
+              "packageVersion": "0.0.1",
+              "packageMain": "src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "sourceRoot": "libs/transactions/ui/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
       "shared-errors": {
         "name": "shared-errors",
         "type": "lib",
@@ -97,12 +407,22 @@
             }
           },
           "name": "shared-errors",
-          "sourceRoot": "libs/shared-errors/src",
-          "projectType": "library",
           "tags": [
+            "npm:private",
             "scope:shared",
             "type:util"
           ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@autoflow/shared-errors",
+              "packageVersion": "0.0.1",
+              "packageMain": "src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "sourceRoot": "libs/shared-errors/src",
+          "projectType": "library",
           "implicitDependencies": []
         }
       },
@@ -202,12 +522,22 @@
             }
           },
           "name": "shared-prisma",
-          "sourceRoot": "libs/shared-prisma/src",
-          "projectType": "library",
           "tags": [
+            "npm:private",
             "scope:shared",
             "type:data-access"
           ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@autoflow/shared-prisma",
+              "packageVersion": "0.0.1",
+              "packageMain": "src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "sourceRoot": "libs/shared-prisma/src",
+          "projectType": "library",
           "implicitDependencies": []
         }
       },
@@ -307,12 +637,22 @@
             }
           },
           "name": "shared-types",
-          "sourceRoot": "libs/shared-types/src",
-          "projectType": "library",
           "tags": [
+            "npm:private",
             "scope:shared",
             "type:types"
           ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@autoflow/shared-types",
+              "packageVersion": "0.0.1",
+              "packageMain": "src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "sourceRoot": "libs/shared-types/src",
+          "projectType": "library",
           "implicitDependencies": []
         }
       },
@@ -412,13 +752,85 @@
             }
           },
           "name": "shared-utils",
-          "sourceRoot": "libs/shared-utils/src",
-          "projectType": "library",
           "tags": [
+            "npm:private",
             "scope:shared",
             "type:util"
           ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@autoflow/shared-utils",
+              "packageVersion": "0.0.1",
+              "packageMain": "src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "sourceRoot": "libs/shared-utils/src",
+          "projectType": "library",
           "implicitDependencies": []
+        }
+      },
+      "properties": {
+        "name": "properties",
+        "type": "lib",
+        "data": {
+          "root": "tests/properties",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "tests/properties",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/eslint.config.js"
+              ],
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "metadata": {
+                "technologies": [
+                  "eslint"
+                ],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": [
+                "{workspaceRoot}/coverage/tests/properties"
+              ],
+              "options": {
+                "jestConfig": "tests/properties/jest.config.ts"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "cache": true
+            }
+          },
+          "name": "properties",
+          "sourceRoot": "tests/properties",
+          "projectType": "library",
+          "implicitDependencies": [],
+          "tags": []
         }
       },
       "shared-auth": {
@@ -502,8 +914,7 @@
                 "outputPath": "dist/libs/shared-auth",
                 "tsConfig": "libs/shared-auth/tsconfig.lib.json",
                 "main": "libs/shared-auth/src/index.ts",
-                "assets": [],
-                "rootDir": "."
+                "assets": []
               },
               "configurations": {},
               "parallelism": true,
@@ -518,12 +929,22 @@
             }
           },
           "name": "shared-auth",
-          "sourceRoot": "libs/shared-auth/src",
-          "projectType": "library",
           "tags": [
+            "npm:private",
             "scope:shared",
             "type:auth"
           ],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@autoflow/shared-auth",
+              "packageVersion": "0.0.1",
+              "packageMain": "src/index.js",
+              "isInPackageManagerWorkspaces": false
+            }
+          },
+          "sourceRoot": "libs/shared-auth/src",
+          "projectType": "library",
           "implicitDependencies": []
         }
       },
@@ -750,6 +1171,68 @@
           "implicitDependencies": [
             "web"
           ],
+          "tags": []
+        }
+      },
+      "e2e": {
+        "name": "e2e",
+        "type": "lib",
+        "data": {
+          "root": "tests/e2e",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "tests/e2e",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "{workspaceRoot}/eslint.config.js"
+              ],
+              "outputs": [
+                "{options.outputFile}"
+              ],
+              "metadata": {
+                "technologies": [
+                  "eslint"
+                ],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "@nx/jest:jest",
+              "outputs": [
+                "{workspaceRoot}/coverage/tests/e2e"
+              ],
+              "options": {
+                "jestConfig": "tests/e2e/jest.config.ts"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "inputs": [
+                "default",
+                "^production",
+                "{workspaceRoot}/jest.preset.js"
+              ],
+              "cache": true
+            }
+          },
+          "name": "e2e",
+          "sourceRoot": "tests/e2e",
+          "projectType": "library",
+          "implicitDependencies": [],
           "tags": []
         }
       },
@@ -1006,10 +1489,52 @@
       }
     },
     "dependencies": {
+      "transactions-data-access": [
+        {
+          "source": "transactions-data-access",
+          "target": "shared-prisma",
+          "type": "static"
+        }
+      ],
+      "transactions-feature": [
+        {
+          "source": "transactions-feature",
+          "target": "transactions-data-access",
+          "type": "static"
+        },
+        {
+          "source": "transactions-feature",
+          "target": "shared-prisma",
+          "type": "static"
+        },
+        {
+          "source": "transactions-feature",
+          "target": "shared-auth",
+          "type": "static"
+        },
+        {
+          "source": "transactions-feature",
+          "target": "shared-types",
+          "type": "static"
+        },
+        {
+          "source": "transactions-feature",
+          "target": "shared-errors",
+          "type": "static"
+        }
+      ],
+      "transactions-ui": [],
       "shared-errors": [],
       "shared-prisma": [],
       "shared-types": [],
       "shared-utils": [],
+      "properties": [
+        {
+          "source": "properties",
+          "target": "shared-types",
+          "type": "static"
+        }
+      ],
       "shared-auth": [
         {
           "source": "shared-auth",
@@ -1029,6 +1554,33 @@
           "type": "implicit"
         }
       ],
+      "e2e": [
+        {
+          "source": "e2e",
+          "target": "transactions-feature",
+          "type": "static"
+        },
+        {
+          "source": "e2e",
+          "target": "shared-auth",
+          "type": "static"
+        },
+        {
+          "source": "e2e",
+          "target": "shared-types",
+          "type": "static"
+        },
+        {
+          "source": "e2e",
+          "target": "transactions-data-access",
+          "type": "static"
+        },
+        {
+          "source": "e2e",
+          "target": "shared-prisma",
+          "type": "static"
+        }
+      ],
       "api": [
         {
           "source": "api",
@@ -1042,6 +1594,11 @@
         },
         {
           "source": "api",
+          "target": "transactions-feature",
+          "type": "static"
+        },
+        {
+          "source": "api",
           "target": "shared-errors",
           "type": "static"
         },
@@ -1051,7 +1608,13 @@
           "type": "static"
         }
       ],
-      "web": []
+      "web": [
+        {
+          "source": "web",
+          "target": "transactions-ui",
+          "type": "static"
+        }
+      ]
     }
   }
 }
